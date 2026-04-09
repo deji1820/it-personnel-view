@@ -982,26 +982,19 @@
                     <div class="data-table-wrapper">
                         <table class="data-table">
                             <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Contact Number</th>
-                                    <th>Advisory Class</th>
-                                    <th>Teaching Classes</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td></td><td></td><td></td><td></td><td></td></tr>
-                                <tr><td></td><td></td><td></td><td></td><td></td></tr>
-                                <tr><td></td><td></td><td></td><td></td><td></td></tr>
-                                <tr><td></td><td></td><td></td><td></td><td></td></tr>
-                                <tr><td></td><td></td><td></td><td></td><td></td></tr>
-                                <tr><td></td><td></td><td></td><td></td><td></td></tr>
-                                <tr><td></td><td></td><td></td><td></td><td></td></tr>
-                                <tr><td></td><td></td><td></td><td></td><td></td></tr>
-                            </tbody>
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Contact Number</th>
+        <th>Advisory Class</th>
+    </tr>
+</thead>
+<tbody id="teacherTableBody">
+    <tr><td colspan="4" style="color:#aaa;padding:20px;text-align:center;">Loading...</td></tr>
+</tbody>
                         </table>
                     </div>
+                    <div class="pagination-wrapper" id="teacherPagination"></div>
                 </div>
             </div>
 
@@ -1033,7 +1026,7 @@
                         <div class="search-filter-row">
                             <div class="search-box">
                                 <span class="search-icon">🔍</span>
-                                <input type="text" placeholder="Search" class="search-input">
+                                <input type="text" placeholder="Search by name" class="search-input" id="teacherSearch" oninput="filterTeachers(this.value)">
                             </div>
                             <select class="filter-dropdown">
                                 <option>Filter by</option>
@@ -1099,11 +1092,12 @@
 }
 
         function navigateToTeacherList() {
-            hideAllPages();
-            document.getElementById('teacherListPage').classList.remove('hidden');
-            updateActiveNav(1);
-            updateTopBar('📊', 'Teacher List', '');
-        }
+    hideAllPages();
+    document.getElementById('teacherListPage').classList.remove('hidden');
+    updateActiveNav(1);
+    updateTopBar('📊', 'Teacher List', '');
+    loadTeacherList();
+}
 
         function navigateToSectionList() {
             hideAllPages();
@@ -1288,6 +1282,100 @@ function filterStudents(query) {
             alert('Change Password - Coming Soon');
             toggleUserDropdown();
         }
+
+        let allTeachers = [];
+let filteredTeachers = [];
+let teacherPage = 1;
+const TEACHERS_PER_PAGE = 15;
+
+async function loadTeacherList() {
+    const tbody = document.getElementById('teacherTableBody');
+    tbody.innerHTML = `<tr><td colspan="4" style="color:#aaa;padding:20px;text-align:center;">Loading…</td></tr>`;
+    try {
+        const res  = await apiFetch(`${API_BASE}/get_teachers.php`);
+        const data = await res.json();
+        if (!data.success || !data.teachers.length) {
+            tbody.innerHTML = `<tr><td colspan="4" style="color:#aaa;padding:20px;text-align:center;">No teachers found.</td></tr>`;
+            document.getElementById('teacherPagination').innerHTML = '';
+            return;
+        }
+        allTeachers = data.teachers;
+        filteredTeachers = allTeachers;
+        teacherPage = 1;
+        renderTeacherTable();
+    } catch(err) {
+        tbody.innerHTML = `<tr><td colspan="4" style="color:#dc3545;padding:20px;text-align:center;">Failed to load.</td></tr>`;
+    }
+}
+
+function renderTeacherTable() {
+    const tbody = document.getElementById('teacherTableBody');
+    if (!filteredTeachers.length) {
+        tbody.innerHTML = `<tr><td colspan="4" style="color:#aaa;padding:20px;text-align:center;">No results found.</td></tr>`;
+        document.getElementById('teacherPagination').innerHTML = '';
+        return;
+    }
+
+    const totalPages = Math.ceil(filteredTeachers.length / TEACHERS_PER_PAGE);
+    if (teacherPage > totalPages) teacherPage = totalPages;
+
+    const start = (teacherPage - 1) * TEACHERS_PER_PAGE;
+    const pageRows = filteredTeachers.slice(start, start + TEACHERS_PER_PAGE);
+
+    tbody.innerHTML = pageRows.map(t => `
+        <tr>
+            <td>${t.full_name || '—'}</td>
+            <td>${t.email || '—'}</td>
+            <td>${t.contact_phone || t.phone || '—'}</td>
+            <td>${t.advisory_class || t.section_name || '—'}</td>
+        </tr>
+    `).join('');
+
+    renderTeacherPagination(totalPages);
+}
+
+function renderTeacherPagination(totalPages) {
+    const wrapper = document.getElementById('teacherPagination');
+    if (totalPages <= 1) { wrapper.innerHTML = ''; return; }
+
+    const total = filteredTeachers.length;
+    const start = (teacherPage - 1) * TEACHERS_PER_PAGE + 1;
+    const end   = Math.min(teacherPage * TEACHERS_PER_PAGE, total);
+
+    let html = `<button class="page-btn" onclick="goToTeacherPage(${teacherPage - 1})" ${teacherPage === 1 ? 'disabled' : ''}>‹</button>`;
+
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= teacherPage - 2 && i <= teacherPage + 2)) {
+            html += `<button class="page-btn ${i === teacherPage ? 'active' : ''}" onclick="goToTeacherPage(${i})">${i}</button>`;
+        } else if (i === teacherPage - 3 || i === teacherPage + 3) {
+            html += `<span class="page-info">…</span>`;
+        }
+    }
+
+    html += `
+        <button class="page-btn" onclick="goToTeacherPage(${teacherPage + 1})" ${teacherPage === totalPages ? 'disabled' : ''}>›</button>
+        <span class="page-info">&nbsp;${start}–${end} of ${total}</span>
+    `;
+
+    wrapper.innerHTML = html;
+}
+
+function goToTeacherPage(page) {
+    const totalPages = Math.ceil(filteredTeachers.length / TEACHERS_PER_PAGE);
+    if (page < 1 || page > totalPages) return;
+    teacherPage = page;
+    renderTeacherTable();
+}
+
+function filterTeachers(query) {
+    const q = query.trim().toLowerCase();
+    filteredTeachers = !q ? allTeachers : allTeachers.filter(t =>
+        (t.full_name || '').toLowerCase().includes(q) ||
+        (t.email     || '').toLowerCase().includes(q)
+    );
+    teacherPage = 1;
+    renderTeacherTable();
+}
 
         function logout() {
             if (confirm) {
