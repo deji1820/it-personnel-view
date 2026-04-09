@@ -381,16 +381,22 @@
     <div class="modal-box">
         <div class="modal-title" id="teacherModalTitle">Add Teacher</div>
         <input type="hidden" id="tmTeacherId">
-        <div class="form-grid">
-            <div class="form-group"><label class="form-label">First Name *</label><input class="form-input" id="tmFirstName" placeholder="First name"></div>
-            <div class="form-group"><label class="form-label">Last Name *</label><input class="form-input" id="tmLastName" placeholder="Last name"></div>
-            <div class="form-group"><label class="form-label">Email <span class="optional">(optional)</span></label><input class="form-input" id="tmEmail" type="email" placeholder="teacher@email.com"></div>
-            <div class="form-group"><label class="form-label">Contact Number <span class="optional">(optional)</span></label><input class="form-input" id="tmPhone" placeholder="09XXXXXXXXX"></div>
-            <div class="form-group full-width" style="background:#f9f8ff;border:1px solid #e0ddf5;border-radius:8px;padding:12px 14px;">
-                <div style="font-size:12px;color:var(--navy);font-weight:600;">ℹ️ Advisory Class</div>
-                <div style="font-size:12px;color:#666;margin-top:4px;">Advisory class is assigned through the <strong>Section List</strong>. Go to Manage Master Data → Section List → Edit a section to assign this teacher as adviser.</div>
-            </div>
-        </div>
+        <!-- REPLACE the form-grid inside the teacher modal with this -->
+<div class="form-grid">
+    <div class="form-group"><label class="form-label">First Name *</label><input class="form-input" id="tmFirstName" placeholder="First name"></div>
+    <div class="form-group"><label class="form-label">Last Name *</label><input class="form-input" id="tmLastName" placeholder="Last name"></div>
+    <div class="form-group"><label class="form-label">Email <span class="optional">(optional)</span></label><input class="form-input" id="tmEmail" type="email" placeholder="teacher@email.com"></div>
+    <div class="form-group"><label class="form-label">Contact Number <span class="optional">(optional)</span></label><input class="form-input" id="tmPhone" placeholder="09XXXXXXXXX"></div>
+    <div class="form-group full-width">
+        <label class="form-label">Date of Birth * <span class="optional">(used as default password)</span></label>
+        <input class="form-input" id="tmDob" type="date">
+        <div class="field-hint">Default password will be set as MMDDYYYY format of their birth date.</div>
+    </div>
+    <div class="form-group full-width" style="background:#f9f8ff;border:1px solid #e0ddf5;border-radius:8px;padding:12px 14px;">
+        <div style="font-size:12px;color:var(--navy);font-weight:600;">ℹ️ Advisory Class</div>
+        <div style="font-size:12px;color:#666;margin-top:4px;">Advisory class is assigned through the <strong>Section List</strong>. Go to Manage Master Data → Section List → Edit a section to assign this teacher as adviser.</div>
+    </div>
+</div>
         <div class="modal-error" id="teacherModalError"></div>
         <div class="modal-actions">
             <button class="btn-cancel" onclick="closeTeacherModal()">Cancel</button>
