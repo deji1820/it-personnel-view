@@ -904,11 +904,9 @@
     class="search-input" 
     id="studentSearch" 
     oninput="filterStudents(this.value)"
-    autocomplete="off"
-    autocorrect="off"
-    autocapitalize="off"
-    spellcheck="false"
-    name="student-search-unique-xyz">                            
+    autocomplete="new-password"
+    readonly
+    onfocus="this.removeAttribute('readonly')">                            
                             </div>
                             <select class="filter-dropdown">
                                 <option>Filter by</option>
@@ -1193,9 +1191,7 @@ async function loadStudentList() {
         allStudents = data.students;
 filteredStudents = allStudents;
 studentPage = 1;
-const searchEl = document.getElementById('studentSearch');
-searchEl.value = '';
-searchEl.dispatchEvent(new Event('input')); // ← tells filterStudents to re-run with empty string
+document.getElementById('studentSearch').value = '';
 renderStudentTable();
 setTimeout(() => {
     const s = document.getElementById('studentSearch');
