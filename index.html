@@ -750,7 +750,7 @@ async function loadTeacherSelectOptions(selectedId=null) {
     const sel=document.getElementById('secAdviserId');
     sel.innerHTML='<option value="">— No adviser assigned —</option>';
     try {
-        if (!teacherSelectCache.length) {
+        teacherSelectCache=[];  // ← always clear cache so it re-fetches fresh
             const data=await apiFetch(`${API_BASE}/get_teachers_for_select.php`).then(r=>r.json());
             teacherSelectCache=data.success?data.teachers:[];
         }
