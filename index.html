@@ -736,15 +736,15 @@
                 <div class="stats-container">
                     <div class="stats-grid">
                         <div class="stat-card">
-                            <div class="stat-label">Students</div>
+<div class="stat-value" id="statStudents">—</div>
                             <div class="stat-value">700</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-label">Teachers</div>
+<div class="stat-value" id="statTeachers">—</div>
                             <div class="stat-value">48</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-label">Sections</div>
+<div class="stat-value" id="statSections">—</div>
                             <div class="stat-value">32</div>
                         </div>
                     </div>
@@ -1038,6 +1038,7 @@
             document.getElementById('manageMasterDataPage').classList.remove('hidden');
             updateActiveNav(1);
             updateTopBar('📊', 'Manage Master Data', '');
+            loadDashboardStats();
         }
 
         function navigateToStudentList() {
@@ -1094,6 +1095,26 @@
             const dropdown = document.getElementById('userDropdown');
             dropdown.classList.toggle('show');
         }
+
+        const API_BASE = 'https://tabularly-tactless-deloras.ngrok-free.dev';
+
+async function apiFetch(url, options = {}) {
+    const headers = { 'ngrok-skip-browser-warning': 'true', ...(options.headers || {}) };
+    return fetch(url, { ...options, headers });
+}
+
+async function loadDashboardStats() {
+    try {
+        const [students, teachers, sections] = await Promise.all([
+            apiFetch(`${API_BASE}/get_students.php`).then(r => r.json()),
+            apiFetch(`${API_BASE}/get_teachers.php`).then(r => r.json()),
+            apiFetch(`${API_BASE}/get_sections.php`).then(r => r.json()),
+        ]);
+        document.getElementById('statStudents').textContent = students.count ?? '—';
+        document.getElementById('statTeachers').textContent = teachers.teachers?.length ?? '—';
+        document.getElementById('statSections').textContent = sections.sections?.length ?? '—';
+    } catch(err) { console.error('loadDashboardStats:', err); }
+}
 
         function editUsername() {
             alert('Edit Username - Coming Soon');
@@ -1271,6 +1292,9 @@
         statusBox.textContent = '❌ Network error: ' + err.message;
     }
 }
+
+loadDashboardStats();
+
     </script>
 </body>
 </html>
