@@ -1323,13 +1323,13 @@ function renderTeacherTable() {
     const pageRows = filteredTeachers.slice(start, start + TEACHERS_PER_PAGE);
 
     tbody.innerHTML = pageRows.map(t => `
-        <tr>
-            <td>${t.full_name || '—'}</td>
-            <td>${t.email || '—'}</td>
-            <td>${t.contact_phone || t.phone || '—'}</td>
-            <td>${t.advisory_class || t.section_name || '—'}</td>
-        </tr>
-    `).join('');
+    <tr>
+        <td>${t.full_name || '—'}</td>
+        <td>${t.email || '—'}</td>
+        <td>${t.contact_phone || '—'}</td>
+        <td>${t.advisory_class || '—'}</td>
+    </tr>
+`).join('');
 
     renderTeacherPagination(totalPages);
 }
