@@ -1173,6 +1173,7 @@ async function loadStudentList() {
     try {
         const res  = await apiFetch(`${API_BASE}/get_students.php`);
         const data = await res.json();
+        console.log('Student data:', data);
         if (!data.success || !data.students.length) {
             tbody.innerHTML = `<tr><td colspan="8" style="color:#aaa;padding:20px;text-align:center;">No students found.</td></tr>`;
             document.getElementById('studentPagination').innerHTML = '';
