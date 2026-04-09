@@ -47,6 +47,53 @@
             top: 0;
         }
 
+        .pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.page-btn {
+    width: 38px;
+    height: 38px;
+    border: 2px solid var(--dark-navy);
+    background: var(--white);
+    color: var(--dark-navy);
+    border-radius: 6px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-btn:hover {
+    background: var(--dark-navy);
+    color: var(--gold);
+}
+
+.page-btn.active {
+    background: var(--dark-navy);
+    color: var(--gold);
+}
+
+.page-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.page-info {
+    font-size: 13px;
+    color: var(--dark-navy);
+    font-weight: 500;
+}
+
         .logo-section {
             display: flex;
             align-items: center;
@@ -881,6 +928,7 @@
 </tbody>
                         </table>
                     </div>
+                    <div class="pagination-wrapper" id="studentPagination"></div>
                 </div>
             </div>
 
@@ -1115,6 +1163,9 @@ async function loadDashboardStats() {
         }
 
         let allStudents = [];
+let filteredStudents = [];
+let studentPage = 1;
+const STUDENTS_PER_PAGE = 15;
 
 async function loadStudentList() {
     const tbody = document.getElementById('studentTableBody');
@@ -1124,44 +1175,96 @@ async function loadStudentList() {
         const data = await res.json();
         if (!data.success || !data.students.length) {
             tbody.innerHTML = `<tr><td colspan="8" style="color:#aaa;padding:20px;text-align:center;">No students found.</td></tr>`;
+            document.getElementById('studentPagination').innerHTML = '';
             return;
         }
         allStudents = data.students;
-        renderStudentTable(allStudents);
+        filteredStudents = allStudents;
+        studentPage = 1;
+        renderStudentTable();
     } catch(err) {
         tbody.innerHTML = `<tr><td colspan="8" style="color:#dc3545;padding:20px;text-align:center;">Failed to load.</td></tr>`;
     }
 }
 
-function renderStudentTable(students) {
+function renderStudentTable() {
     const tbody = document.getElementById('studentTableBody');
-    if (!students.length) {
+    if (!filteredStudents.length) {
         tbody.innerHTML = `<tr><td colspan="8" style="color:#aaa;padding:20px;text-align:center;">No results found.</td></tr>`;
+        document.getElementById('studentPagination').innerHTML = '';
         return;
     }
-    tbody.innerHTML = students.map(s => `
+
+    const totalPages = Math.ceil(filteredStudents.length / STUDENTS_PER_PAGE);
+    if (studentPage > totalPages) studentPage = totalPages;
+
+    const start = (studentPage - 1) * STUDENTS_PER_PAGE;
+    const pageRows = filteredStudents.slice(start, start + STUDENTS_PER_PAGE);
+
+    tbody.innerHTML = pageRows.map(s => `
         <tr>
-            <td>${s.first_name || '—'}</td>
-            <td>${s.middle_name || '—'}</td>
-            <td>${s.last_name || '—'}</td>
+            <td>${s.first_name    || '—'}</td>
+            <td>${s.middle_name   || '—'}</td>
+            <td>${s.last_name     || '—'}</td>
             <td>${s.contact_email || '—'}</td>
             <td>${s.guardian_name || '—'}</td>
             <td>${s.guardian_phone || s.contact_phone || '—'}</td>
-            <td>${s.grade_level || '—'}</td>
-            <td>${s.section_name || '—'}</td>
+            <td>${s.grade_level   || '—'}</td>
+            <td>${s.section_name  || '—'}</td>
         </tr>
     `).join('');
+
+    renderStudentPagination(totalPages);
+}
+
+function renderStudentPagination(totalPages) {
+    const wrapper = document.getElementById('studentPagination');
+    if (totalPages <= 1) { wrapper.innerHTML = ''; return; }
+
+    const total = filteredStudents.length;
+    const start = (studentPage - 1) * STUDENTS_PER_PAGE + 1;
+    const end   = Math.min(studentPage * STUDENTS_PER_PAGE, total);
+
+    let html = `
+        <button class="page-btn" onclick="goToStudentPage(${studentPage - 1})" ${studentPage === 1 ? 'disabled' : ''}>‹</button>
+    `;
+
+    for (let i = 1; i <= totalPages; i++) {
+        if (
+            i === 1 || i === totalPages ||
+            (i >= studentPage - 2 && i <= studentPage + 2)
+        ) {
+            html += `<button class="page-btn ${i === studentPage ? 'active' : ''}" onclick="goToStudentPage(${i})">${i}</button>`;
+        } else if (i === studentPage - 3 || i === studentPage + 3) {
+            html += `<span class="page-info">…</span>`;
+        }
+    }
+
+    html += `
+        <button class="page-btn" onclick="goToStudentPage(${studentPage + 1})" ${studentPage === totalPages ? 'disabled' : ''}>›</button>
+        <span class="page-info">&nbsp;${start}–${end} of ${total}</span>
+    `;
+
+    wrapper.innerHTML = html;
+}
+
+function goToStudentPage(page) {
+    const totalPages = Math.ceil(filteredStudents.length / STUDENTS_PER_PAGE);
+    if (page < 1 || page > totalPages) return;
+    studentPage = page;
+    renderStudentTable();
 }
 
 function filterStudents(query) {
     const q = query.trim().toLowerCase();
-    if (!q) { renderStudentTable(allStudents); return; }
-    renderStudentTable(allStudents.filter(s =>
-        (s.first_name   || '').toLowerCase().includes(q) ||
-        (s.last_name    || '').toLowerCase().includes(q) ||
-        (s.middle_name  || '').toLowerCase().includes(q) ||
+    filteredStudents = !q ? allStudents : allStudents.filter(s =>
+        (s.first_name     || '').toLowerCase().includes(q) ||
+        (s.last_name      || '').toLowerCase().includes(q) ||
+        (s.middle_name    || '').toLowerCase().includes(q) ||
         (s.student_number || '').toLowerCase().includes(q)
-    ));
+    );
+    studentPage = 1;
+    renderStudentTable();
 }
 
         function changePassword() {
