@@ -707,6 +707,7 @@ function filterTeachers(q){
     teacherPage=1; renderTeacherTable();
 }
 
+// REPLACE openTeacherModal with this
 function openTeacherModal(data=null) {
     document.getElementById('teacherModalTitle').textContent=data?'Edit Teacher':'Add Teacher';
     document.getElementById('tmTeacherId').value=data?data.teacher_id:'';
@@ -720,20 +721,29 @@ function openTeacherModal(data=null) {
     }
     document.getElementById('tmEmail').value=data?(data.email||''):'';
     document.getElementById('tmPhone').value=data?(data.contact_phone||''):'';
+    document.getElementById('tmDob').value=data?(data.dob||''):'';
     document.getElementById('teacherModalError').textContent='';
     document.getElementById('teacherModal').classList.add('show');
 }
 function closeTeacherModal(){ document.getElementById('teacherModal').classList.remove('show'); }
 function editTeacher(id){ const t=allTeachers.find(x=>x.teacher_id===id); if(t) openTeacherModal(t); }
 
+// REPLACE saveTeacher with this
 async function saveTeacher(){
     const id=document.getElementById('tmTeacherId').value;
+    const dob=document.getElementById('tmDob').value;
+
+    if (!id && !dob) {
+        document.getElementById('teacherModalError').textContent='Date of birth is required (used as default password).'; return;
+    }
+
     const payload={
         teacher_id: id||undefined,
         first_name: document.getElementById('tmFirstName').value.trim(),
         last_name:  document.getElementById('tmLastName').value.trim(),
         email:      document.getElementById('tmEmail').value.trim(),
         phone:      document.getElementById('tmPhone').value.trim(),
+        dob:        dob,
     };
     if (!payload.first_name||!payload.last_name){
         document.getElementById('teacherModalError').textContent='First name and last name are required.'; return;
