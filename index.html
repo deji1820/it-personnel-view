@@ -899,7 +899,16 @@
                         <div class="search-filter-row">
                             <div class="search-box">
                                 <span class="search-icon">🔍</span>
-<input type="text" placeholder="Search by name or student number" class="search-input" id="studentSearch" oninput="filterStudents(this.value)" autocomplete="off">                            
+<input type="text" 
+    placeholder="Search by name or student number" 
+    class="search-input" 
+    id="studentSearch" 
+    oninput="filterStudents(this.value)"
+    autocomplete="off"
+    autocorrect="off"
+    autocapitalize="off"
+    spellcheck="false"
+    name="student-search-unique-xyz">                            
                             </div>
                             <select class="filter-dropdown">
                                 <option>Filter by</option>
@@ -1088,9 +1097,6 @@
     updateActiveNav(1);
     updateTopBar('📊', 'Student List', '');
     filteredStudents = [];
-    setTimeout(() => {                                        // ← ADD
-        document.getElementById('studentSearch').value = ''; // ← ADD
-    }, 50);                                                   // ← ADD
     loadStudentList();
 }
 
@@ -1191,6 +1197,12 @@ const searchEl = document.getElementById('studentSearch');
 searchEl.value = '';
 searchEl.dispatchEvent(new Event('input')); // ← tells filterStudents to re-run with empty string
 renderStudentTable();
+setTimeout(() => {
+    const s = document.getElementById('studentSearch');
+    s.value = '';
+    filteredStudents = allStudents;
+    renderStudentTable();
+}, 200);
     } catch(err) {
         tbody.innerHTML = `<tr><td colspan="8" style="color:#dc3545;padding:20px;text-align:center;">Failed to load.</td></tr>`;
     }
