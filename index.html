@@ -899,7 +899,8 @@
                         <div class="search-filter-row">
                             <div class="search-box">
                                 <span class="search-icon">🔍</span>
-<input type="text" placeholder="Search by name or student number" class="search-input" id="studentSearch" oninput="filterStudents(this.value)">                            </div>
+<input type="text" placeholder="Search by name or student number" class="search-input" id="studentSearch" oninput="filterStudents(this.value)" autocomplete="off">                            
+                            </div>
                             <select class="filter-dropdown">
                                 <option>Filter by</option>
                                 <option>Grade</option>
@@ -1182,9 +1183,10 @@ async function loadStudentList() {
             return;
         }
         allStudents = data.students;
-        filteredStudents = allStudents;
-        studentPage = 1;
-        renderStudentTable();
+filteredStudents = allStudents;
+studentPage = 1;
+document.getElementById('studentSearch').value = ''; // ← force clear here too
+renderStudentTable();
     } catch(err) {
         tbody.innerHTML = `<tr><td colspan="8" style="color:#dc3545;padding:20px;text-align:center;">Failed to load.</td></tr>`;
     }
