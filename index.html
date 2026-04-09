@@ -736,17 +736,17 @@
                 <div class="stats-container">
                     <div class="stats-grid">
                         <div class="stat-card">
-<div class="stat-value" id="statStudents">—</div>
-                            <div class="stat-value">700</div>
-                        </div>
-                        <div class="stat-card">
-<div class="stat-value" id="statTeachers">—</div>
-                            <div class="stat-value">48</div>
-                        </div>
-                        <div class="stat-card">
-<div class="stat-value" id="statSections">—</div>
-                            <div class="stat-value">32</div>
-                        </div>
+    <div class="stat-label">Students</div>
+    <div class="stat-value" id="statStudents">—</div>
+</div>
+<div class="stat-card">
+    <div class="stat-label">Teachers</div>
+    <div class="stat-value" id="statTeachers">—</div>
+</div>
+<div class="stat-card">
+    <div class="stat-label">Sections</div>
+    <div class="stat-value" id="statSections">—</div>
+</div>
                     </div>
                 </div>
 
@@ -1031,6 +1031,7 @@
             document.getElementById('dashboardPage').classList.remove('hidden');
             updateActiveNav(0);
             updateTopBar('🏠', 'Dashboard', 'Welcome Back, Admin!');
+            loadDashboardStats();
         }
 
         function navigateToManageMasterData() {
@@ -1038,7 +1039,6 @@
             document.getElementById('manageMasterDataPage').classList.remove('hidden');
             updateActiveNav(1);
             updateTopBar('📊', 'Manage Master Data', '');
-            loadDashboardStats();
         }
 
         function navigateToStudentList() {
