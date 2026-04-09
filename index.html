@@ -852,8 +852,7 @@
                         <div class="search-filter-row">
                             <div class="search-box">
                                 <span class="search-icon">🔍</span>
-                                <input type="text" placeholder="Search" class="search-input">
-                            </div>
+<input type="text" placeholder="Search by name or student number" class="search-input" id="studentSearch" oninput="filterStudents(this.value)">                            </div>
                             <select class="filter-dropdown">
                                 <option>Filter by</option>
                                 <option>Grade</option>
@@ -877,16 +876,9 @@
                                     <th>Section</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                            </tbody>
+                            <tbody id="studentTableBody">
+    <tr><td colspan="8" style="color:#aaa;padding:20px;">Loading...</td></tr>
+</tbody>
                         </table>
                     </div>
                 </div>
@@ -1046,6 +1038,7 @@
             document.getElementById('studentListPage').classList.remove('hidden');
             updateActiveNav(1);
             updateTopBar('📊', 'Student List', '');
+            loadStudentList();
         }
 
         function navigateToTeacherList() {
@@ -1120,6 +1113,56 @@ async function loadDashboardStats() {
             alert('Edit Username - Coming Soon');
             toggleUserDropdown();
         }
+
+        let allStudents = [];
+
+async function loadStudentList() {
+    const tbody = document.getElementById('studentTableBody');
+    tbody.innerHTML = `<tr><td colspan="8" style="color:#aaa;padding:20px;text-align:center;">Loading…</td></tr>`;
+    try {
+        const res  = await apiFetch(`${API_BASE}/get_students.php`);
+        const data = await res.json();
+        if (!data.success || !data.students.length) {
+            tbody.innerHTML = `<tr><td colspan="8" style="color:#aaa;padding:20px;text-align:center;">No students found.</td></tr>`;
+            return;
+        }
+        allStudents = data.students;
+        renderStudentTable(allStudents);
+    } catch(err) {
+        tbody.innerHTML = `<tr><td colspan="8" style="color:#dc3545;padding:20px;text-align:center;">Failed to load.</td></tr>`;
+    }
+}
+
+function renderStudentTable(students) {
+    const tbody = document.getElementById('studentTableBody');
+    if (!students.length) {
+        tbody.innerHTML = `<tr><td colspan="8" style="color:#aaa;padding:20px;text-align:center;">No results found.</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = students.map(s => `
+        <tr>
+            <td>${s.first_name || '—'}</td>
+            <td>${s.middle_name || '—'}</td>
+            <td>${s.last_name || '—'}</td>
+            <td>${s.contact_email || '—'}</td>
+            <td>${s.guardian_name || '—'}</td>
+            <td>${s.guardian_phone || s.contact_phone || '—'}</td>
+            <td>${s.grade_level || '—'}</td>
+            <td>${s.section_name || '—'}</td>
+        </tr>
+    `).join('');
+}
+
+function filterStudents(query) {
+    const q = query.trim().toLowerCase();
+    if (!q) { renderStudentTable(allStudents); return; }
+    renderStudentTable(allStudents.filter(s =>
+        (s.first_name   || '').toLowerCase().includes(q) ||
+        (s.last_name    || '').toLowerCase().includes(q) ||
+        (s.middle_name  || '').toLowerCase().includes(q) ||
+        (s.student_number || '').toLowerCase().includes(q)
+    ));
+}
 
         function changePassword() {
             alert('Change Password - Coming Soon');
@@ -1278,6 +1321,7 @@ async function loadDashboardStats() {
                 msg += '\n\n⚠️ Warnings:\n' + result.errors.join('\n');
             }
             statusBox.textContent = msg;
+            loadStudentList();
             statusBox.style.whiteSpace = 'pre-wrap';
         } else {
             statusBox.style.background = '#fff5f5';
