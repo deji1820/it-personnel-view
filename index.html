@@ -1058,6 +1058,31 @@
         </main>
     </div>
 
+<!-- ══ LOGOUT MODAL ══ -->
+<div id="logoutModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:50px 60px;text-align:center;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.25);">
+        <div style="font-size:52px;margin-bottom:16px;">🚪</div>
+        <div style="font-size:22px;font-weight:700;color:#2d2550;margin-bottom:8px;">Log out?</div>
+        <div style="font-size:14px;color:#666;margin-bottom:32px;">Are you sure you want to log out of your account?</div>
+        <div style="display:flex;gap:14px;justify-content:center;">
+            <button onclick="closeLogoutModal()" style="padding:12px 36px;border-radius:8px;font-size:15px;font-weight:600;font-family:'Outfit',sans-serif;cursor:pointer;border:none;background:#f0f0f0;color:#2d2550;">Cancel</button>
+            <button onclick="confirmLogout()" style="padding:12px 36px;border-radius:8px;font-size:15px;font-weight:600;font-family:'Outfit',sans-serif;cursor:pointer;border:none;background:#dc3545;color:#fff;">Log Out</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ COMING SOON MODAL ══ -->
+<div id="comingSoonModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:50px 60px;text-align:center;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.25);">
+        <div style="font-size:52px;margin-bottom:16px;">🚧</div>
+        <div style="font-size:22px;font-weight:700;color:#2d2550;margin-bottom:8px;" id="comingSoonTitle">Coming Soon</div>
+        <div style="font-size:14px;color:#666;margin-bottom:30px;">This feature is not yet available. Please check back later.</div>
+        <button onclick="closeComingSoonModal()" style="background:#2d2550;color:#d4a650;border:none;border-radius:8px;padding:12px 40px;font-size:15px;font-weight:600;font-family:'Outfit',sans-serif;cursor:pointer;">Got it</button>
+    </div>
+</div>
+
+<script>
+    
     <script>
         // Navigation functions
         function navigateToDashboard() {
@@ -1155,10 +1180,11 @@ async function loadDashboardStats() {
 }
 
         function editUsername() {
-            alert('Edit Username - Coming Soon');
             toggleUserDropdown();
+            document.getElementById('comingSoonTitle').textContent = 'Edit Username';
+            document.getElementById('comingSoonModal').style.display = 'flex';
         }
-
+    
         let allStudents = [];
 let filteredStudents = [];
 let studentPage = 1;
@@ -1273,8 +1299,9 @@ function filterStudents(query) {
 }
 
         function changePassword() {
-            alert('Change Password - Coming Soon');
             toggleUserDropdown();
+            document.getElementById('comingSoonTitle').textContent = 'Change Password';
+            document.getElementById('comingSoonModal').style.display = 'flex';
         }
 
         let allTeachers = [];
@@ -1467,17 +1494,12 @@ function filterTeachers(query) {
 }
 
         function logout() {
-            if (confirm) {
-                // Replace 'LOGIN_PAGE_URL_HERE' with your actual login page URL
-                window.location.href = 'https://login-topaz-iota.vercel.app/';
-                
-                // Alternative: If you want to use a relative path, use:
-                // window.location.href = '/login.html';
-                
-                // Or if you want to redirect to a different domain:
-                // window.location.href = 'https://yourdomain.com/login';
-            }
+            toggleUserDropdown();
+            document.getElementById('logoutModal').style.display = 'flex';
         }
+        function closeLogoutModal()  { document.getElementById('logoutModal').style.display = 'none'; }
+        function confirmLogout()     { window.location.href = 'https://login-topaz-iota.vercel.app/'; }
+        function closeComingSoonModal() { document.getElementById('comingSoonModal').style.display = 'none'; }
 
         // Close dropdown when clicking outside
         document.addEventListener('click', function(event) {
