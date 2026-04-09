@@ -360,8 +360,18 @@
             <div class="form-group"><label class="form-label">Middle Name <span class="optional">(optional)</span></label><input class="form-input" id="smMiddleName" placeholder="Middle name"></div>
             <div class="form-group"><label class="form-label">Last Name *</label><input class="form-input" id="smLastName" placeholder="Last name"></div>
             <div class="form-group"><label class="form-label">Date of Birth <span class="optional">(optional)</span></label><input class="form-input" id="smDob" type="date"></div>
-            <div class="form-group"><label class="form-label">Grade Level <span class="optional">(optional)</span></label><input class="form-input" id="smGrade" placeholder="e.g. 7"></div>
-            <div class="form-group"><label class="form-label">Section Name <span class="optional">(optional)</span></label><input class="form-input" id="smSection" placeholder="e.g. Xavier"></div>
+            <div class="form-group">
+    <label class="form-label">Grade Level <span class="optional">(optional)</span></label>
+    <select class="form-select" id="smGrade" onchange="filterSectionsByGrade(this.value)">
+        <option value="">— Select Grade —</option>
+    </select>
+</div>
+<div class="form-group">
+    <label class="form-label">Section Name <span class="optional">(optional)</span></label>
+    <select class="form-select" id="smSection">
+        <option value="">— Select Section —</option>
+    </select>
+</div>
             <div class="form-group"><label class="form-label">Email <span class="optional">(optional)</span></label><input class="form-input" id="smEmail" type="email" placeholder="student@email.com"></div>
             <div class="form-group"><label class="form-label">Contact Phone <span class="optional">(optional)</span></label><input class="form-input" id="smPhone" placeholder="09XXXXXXXXX"></div>
             <div class="form-group"><label class="form-label">Guardian's Name <span class="optional">(optional)</span></label><input class="form-input" id="smGuardianName" placeholder="Guardian full name"></div>
@@ -583,8 +593,14 @@ async function openStudentModal(data=null) {
     document.getElementById('smLastName').value = data ? (data.last_name||'') : '';
     document.getElementById('smGender').value = data ? (data.gender||'') : '';
     document.getElementById('smDob').value = data ? (data.dob||'') : '';
-    document.getElementById('smGrade').value = data ? (data.grade_level||'') : '';
-    document.getElementById('smSection').value = data ? (data.section_name||'') : '';
+    await loadGradeSectionOptions();
+if (data && data.grade_level) {
+    document.getElementById('smGrade').value = data.grade_level;
+    filterSectionsByGrade(data.grade_level);
+    if (data.section_name) {
+        document.getElementById('smSection').value = data.section_name;
+    }
+}
     document.getElementById('smEmail').value = data ? (data.contact_email||'') : '';
     document.getElementById('smPhone').value = data ? (data.contact_phone||'') : '';
     document.getElementById('smGuardianName').value = data ? (data.guardian_name||'') : '';
@@ -820,6 +836,54 @@ function filterSections(q){
         (s.section_name||'').toLowerCase().includes(q)||(s.grade_level||'').toLowerCase().includes(q)||
         (s.adviser_name||'').toLowerCase().includes(q));
     sectionPage=1; renderSectionTable();
+}
+
+// Add this near your other section/student functions:
+
+async function loadGradeSectionOptions() {
+    try {
+        const data = await apiFetch(`${API_BASE}/get_sections.php`).then(r => r.json());
+        if (!data.success) return;
+
+        // Get unique grade levels sorted
+        const grades = [...new Set(data.sections.map(s => s.grade_level))]
+            .sort((a, b) => parseInt(a) - parseInt(b));
+
+        const gradeSelect = document.getElementById('smGrade');
+        const currentGrade = gradeSelect.value;
+        gradeSelect.innerHTML = '<option value="">— Select Grade —</option>';
+        grades.forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g;
+            opt.textContent = 'Grade ' + g;
+            if (g === currentGrade) opt.selected = true;
+            gradeSelect.appendChild(opt);
+        });
+
+        // Store sections globally for filtering
+        window._allSectionsForStudent = data.sections;
+
+        // If a grade is already selected, populate sections too
+        if (currentGrade) filterSectionsByGrade(currentGrade);
+
+    } catch(e) { console.error('Could not load grade/section options', e); }
+}
+
+function filterSectionsByGrade(grade) {
+    const sectionSelect = document.getElementById('smSection');
+    const currentSection = sectionSelect.value;
+    sectionSelect.innerHTML = '<option value="">— Select Section —</option>';
+
+    if (!grade || !window._allSectionsForStudent) return;
+
+    const filtered = window._allSectionsForStudent.filter(s => s.grade_level === grade);
+    filtered.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.section_name;
+        opt.textContent = s.section_name;
+        if (s.section_name === currentSection) opt.selected = true;
+        sectionSelect.appendChild(opt);
+    });
 }
 
 async function openSectionModal(data=null){
