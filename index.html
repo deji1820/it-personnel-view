@@ -770,7 +770,7 @@ async function loadStudentList() {
         }
         allStudents=data.students; filteredStudents=allStudents; studentPage=1;
 document.getElementById('studentSearch').value='';
-populateStudentFilterDropdowns();
+populateStudentFilterDropdowns('', '');
 renderStudentTable();
     } catch(e) {
         tbody.innerHTML=`<tr><td colspan="10" style="color:#dc3545;padding:20px;text-align:center;">Failed to load.</td></tr>`;
