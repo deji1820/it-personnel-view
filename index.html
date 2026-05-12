@@ -1002,12 +1002,13 @@ function promptDelete(id, type, name){
     const endpoints={student:'delete_student.php',teacher:'delete_teacher.php',section:'delete_section.php'};
     const idKeys={student:'student_id',teacher:'teacher_id',section:'section_id'};
     pendingDeleteFn=async()=>{
-        const result=await apiFetch(`${API_BASE}/${endpoints[type]}`,{
-            method:'POST',headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({[idKeys[type]]:id})
-        }).then(r=>r.json());
-        if (result.success){
-            closeConfirmDelete();
+    const result=await apiFetch(`${API_BASE}/${endpoints[type]}`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'},
+        body:JSON.stringify({[idKeys[type]]:id})
+    }).then(r=>r.json());
+    if (result.success){
+        closeConfirmDelete();
             if (type==='student') loadStudentList();
             else if (type==='teacher'){ teacherSelectCache=[]; loadTeacherList(); }
             else { loadSectionList(); if(allTeachers.length){ teacherSelectCache=[]; loadTeacherList(); } }
@@ -1016,8 +1017,14 @@ function promptDelete(id, type, name){
     document.getElementById('confirmDeleteModal').classList.add('show');
 }
 function closeConfirmDelete(){ document.getElementById('confirmDeleteModal').classList.remove('show'); pendingDeleteFn=null; }
-async function confirmDeleteAction(){ if(pendingDeleteFn) await pendingDeleteFn(); }
-
+async function confirmDeleteAction(){
+    if (!pendingDeleteFn) return;
+    try {
+        await pendingDeleteFn();
+    } catch(e) {
+        alert('Delete failed: ' + e.message);
+    }
+}
 // ── Shared Pagination Renderer ──────────────────────────────────────────────
 function renderPagination(wrapperId, currentPage, totalPages, totalItems, gotoFn){
     const wrapper=document.getElementById(wrapperId);
