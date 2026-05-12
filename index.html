@@ -70,10 +70,19 @@
         .stat-value { color:var(--gold); font-size:48px; font-weight:700; }
         .activity-section { background:var(--light-gray); border-radius:12px; padding:40px; }
         .activity-title { font-size:28px; font-weight:700; color:var(--dark-navy); margin-bottom:30px; }
-        .activity-table-wrapper { background:var(--white); border-radius:8px; overflow-x:auto; }
+        .activity-table-wrapper { background:var(--white); border-radius:8px; overflow-x:auto; border:1px solid rgba(61,53,103,0.1); }
         .activity-table { width:100%; border-collapse:collapse; }
-        .activity-table th { padding:15px 20px; text-align:center; font-size:14px; font-weight:600; color:var(--dark-navy); border:1px solid var(--dark-navy); }
-        .activity-table td { padding:12px 20px; font-size:14px; color:var(--dark-navy); text-align:center; border:1px solid var(--dark-navy); }
+        .activity-table thead tr { background: var(--dark-navy); }
+.activity-table th { padding:13px 20px; text-align:left; font-size:11px; font-weight:600; color:var(--gold); text-transform:uppercase; letter-spacing:0.08em; border:none; }
+.activity-table td { padding:13px 20px; font-size:13.5px; color:var(--dark-navy); text-align:left; border:none; border-bottom:1px solid rgba(61,53,103,0.07); vertical-align:middle; }
+.activity-table tbody tr:last-child td { border-bottom:none; }
+.activity-table tbody tr:hover { background:rgba(212,166,80,0.05); }
+
+        .date-pill { display:inline-block; background:rgba(61,53,103,0.07); color:var(--dark-navy); font-size:12px; font-weight:600; padding:3px 10px; border-radius:20px; }
+.time-text { font-size:12.5px; color:#888; font-variant-numeric:tabular-nums; }
+.activity-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--gold); margin-right:8px; vertical-align:middle; }
+.performer-chip { display:inline-flex; align-items:center; gap:6px; background:rgba(45,37,80,0.07); border-radius:20px; padding:3px 10px 3px 6px; font-size:12px; font-weight:500; color:var(--dark-navy); }
+.performer-avatar { width:20px; height:20px; border-radius:50%; background:var(--dark-navy); color:var(--gold); font-size:9px; font-weight:700; display:flex; align-items:center; justify-content:center; }
 
         /* Master Data */
         .master-data-container { background:var(--light-gray); border-radius:12px; padding:50px; height:calc(100vh - 180px); display:flex; align-items:center; justify-content:center; }
@@ -633,12 +642,13 @@ async function loadRecentActivity() {
             const dt   = new Date(log.created_at);
             const date = isNaN(dt) ? log.created_at : dt.toLocaleDateString('en-PH', {month:'2-digit',day:'2-digit',year:'numeric'});
             const time = isNaN(dt) ? '' : dt.toLocaleTimeString('en-PH', {hour:'2-digit',minute:'2-digit'});
-            return `<tr>
-                <td>${date}</td>
-                <td>${time}</td>
-                <td>${log.activity || '—'}</td>
-                <td>${log.performed_by || '—'}</td>
-            </tr>`;
+            const initials = (log.performed_by||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+return `<tr>
+    <td><span class="date-pill">${date}</span></td>
+    <td><span class="time-text">${time}</span></td>
+    <td><span class="activity-dot"></span><span style="font-weight:500">${log.activity || '—'}</span></td>
+    <td><span class="performer-chip"><span class="performer-avatar">${initials}</span>${log.performed_by || '—'}</span></td>
+</tr>`;
         }).join('');
     } catch(e) {
         tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#dc3545;padding:20px;">Failed to load activity.</td></tr>';
