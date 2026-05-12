@@ -177,6 +177,20 @@
     font-family: 'Outfit', sans-serif;
     transition: all 0.2s;
 }
+
+.nav-parent { cursor: pointer; user-select: none; }
+.nav-dropdown-arrow { margin-left: auto; font-size: 11px; color: var(--gold); transition: transform 0.25s ease; }
+.nav-dropdown-arrow.open { transform: rotate(180deg); }
+.nav-dropdown { background: rgba(0,0,0,0.2); overflow: hidden; }
+.nav-sub-item {
+    display: block; padding: 10px 20px 10px 58px;
+    color: rgba(245,197,99,0.75); font-size: 13px; font-weight: 400;
+    text-decoration: none; transition: all 0.2s ease;
+    border-left: 4px solid transparent;
+}
+.nav-sub-item:hover { color: var(--light-gold); background: rgba(212,166,80,0.08); border-left-color: var(--gold); }
+.nav-sub-item.active { color: var(--light-gold); font-weight: 600; border-left-color: var(--gold); }
+        
 .btn-delete:hover { background: #fecaca; }
 
         /* Modal */
@@ -234,9 +248,20 @@
             </div>
         </div>
         <nav class="nav-menu">
-            <div class="nav-item active" onclick="navigateToDashboard()"><span class="nav-icon">🏠</span><span>Dashboard</span></div>
-            <div class="nav-item" onclick="navigateToManageMasterData()"><span class="nav-icon">📊</span><span>Manage Master Data</span></div>
-        </nav>
+    <a href="#" class="nav-item active" onclick="navigateToDashboard(event)">
+        <span class="nav-icon">🏠</span><span>Dashboard</span>
+    </a>
+
+    <div class="nav-item nav-parent" onclick="toggleNavDropdown('masterDataDropdown', this)">
+        <span class="nav-icon">📊</span><span>Manage Master Data</span>
+        <span class="nav-dropdown-arrow" id="masterDataArrow">▼</span>
+    </div>
+    <div class="nav-dropdown hidden" id="masterDataDropdown">
+        <a href="#" class="nav-sub-item" onclick="navTo(event, navigateToStudentList)">Student List</a>
+        <a href="#" class="nav-sub-item" onclick="navTo(event, navigateToTeacherList)">Teacher List</a>
+        <a href="#" class="nav-sub-item" onclick="navTo(event, navigateToSectionList)">Section List</a>
+    </div>
+</nav>
     </aside>
 
     <main class="main-content">
@@ -300,7 +325,7 @@
         <div id="studentListPage" class="dashboard-content hidden">
             <div class="list-page-container">
                 <div class="list-header">
-                    <button class="back-button" onclick="navigateToManageMasterData()"><span class="back-arrow">←</span></button>
+                    
                     <h1 class="list-title">Student List</h1>
                 </div>
                 <div class="list-controls">
@@ -336,7 +361,7 @@
         <div id="teacherListPage" class="dashboard-content hidden">
             <div class="list-page-container">
                 <div class="list-header">
-                    <button class="back-button" onclick="navigateToManageMasterData()"><span class="back-arrow">←</span></button>
+                   
                     <h1 class="list-title">Teacher List</h1>
                 </div>
                 <div class="list-controls">
@@ -368,7 +393,7 @@
         <div id="sectionListPage" class="dashboard-content hidden">
             <div class="list-page-container">
                 <div class="list-header">
-                    <button class="back-button" onclick="navigateToManageMasterData()"><span class="back-arrow">←</span></button>
+                    
                     <h1 class="list-title">Section List</h1>
                 </div>
                 <div class="list-controls">
@@ -558,7 +583,15 @@ function updateTopBar(icon, title, subtitle) {
 function updateActiveNav(i) {
     document.querySelectorAll('.nav-item').forEach((el, idx) => el.classList.toggle('active', idx === i));
 }
-function navigateToDashboard() { hideAllPages(); document.getElementById('dashboardPage').classList.remove('hidden'); updateActiveNav(0); updateTopBar('🏠','Dashboard','Welcome Back, Admin!'); loadDashboardStats(); loadRecentActivity(); }
+function navigateToDashboard(event) {
+    if (event) event.preventDefault();
+    hideAllPages();
+    document.getElementById('dashboardPage').classList.remove('hidden');
+    updateActiveNav(0);
+    updateTopBar('🏠','Dashboard','Welcome Back, Admin!');
+    loadDashboardStats();
+    loadRecentActivity();
+}
 function navigateToManageMasterData(){ hideAllPages(); document.getElementById('manageMasterDataPage').classList.remove('hidden'); updateActiveNav(1); updateTopBar('📊','Manage Master Data',''); }
 function navigateToStudentList()     { hideAllPages(); document.getElementById('studentListPage').classList.remove('hidden'); updateActiveNav(1); updateTopBar('📊','Student List',''); filteredStudents=[]; loadStudentList(); }
 function navigateToTeacherList()     { hideAllPages(); document.getElementById('teacherListPage').classList.remove('hidden'); updateActiveNav(1); updateTopBar('📊','Teacher List',''); loadTeacherList(); }
@@ -880,6 +913,22 @@ async function loadTeacherSelectOptions(selectedId=null) {
             sel.appendChild(opt);
         });
     } catch(e){ console.error('Could not load teachers for select',e); }
+}
+
+function toggleNavDropdown(dropdownId, parentEl) {
+    const dropdown = document.getElementById(dropdownId);
+    const arrow = parentEl.querySelector('.nav-dropdown-arrow');
+    const isOpen = !dropdown.classList.contains('hidden');
+    dropdown.classList.toggle('hidden', isOpen);
+    arrow.classList.toggle('open', !isOpen);
+    parentEl.classList.toggle('active', !isOpen);
+}
+
+function navTo(e, fn) {
+    e.preventDefault();
+    document.querySelectorAll('.nav-sub-item').forEach(el => el.classList.remove('active'));
+    e.target.classList.add('active');
+    fn();
 }
 
 async function loadSectionList() {
