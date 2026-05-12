@@ -352,12 +352,25 @@
                         <button class="action-button" onclick="openStudentModal()">Add Student</button>
                     </div>
                     <div class="search-filter-row">
-                        <div class="search-box">
-                            <span class="search-icon">🔍</span>
-                            <input type="text" placeholder="Search by name or student number" class="search-input" id="studentSearch" oninput="filterStudents(this.value)" autocomplete="off">
-                        </div>
-                        <select class="filter-dropdown"><option>Filter by</option><option>Grade</option><option>Section</option></select>
-                    </div>
+    <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Search by name or student number" class="search-input" id="studentSearch" oninput="applyStudentFilters()" autocomplete="off">
+    </div>
+    <select class="filter-dropdown" id="studentGradeFilter" onchange="applyStudentFilters()">
+        <option value="">Grade</option>
+    </select>
+    <select class="filter-dropdown" id="studentSectionFilter" onchange="applyStudentFilters()">
+        <option value="">Section</option>
+    </select>
+    <select class="filter-dropdown" id="studentAlphaFilter" onchange="applyStudentFilters()">
+        <option value="">A–Z</option>
+        <option value="az">Name A→Z</option>
+        <option value="za">Name Z→A</option>
+        <option value="num-asc">No. Asc</option>
+        <option value="num-desc">No. Desc</option>
+    </select>
+    <button class="action-button" onclick="clearStudentFilters()" style="padding:10px 20px;font-size:13px;border-radius:8px;">Clear</button>
+</div>
                 </div>
                 <div id="studentUploadStatus" style="display:none;margin-bottom:16px;padding:14px 20px;border-radius:8px;font-size:14px;font-weight:500;"></div>
                 <div class="data-table-wrapper">
@@ -684,7 +697,9 @@ async function loadStudentList() {
             document.getElementById('studentPagination').innerHTML=''; return;
         }
         allStudents=data.students; filteredStudents=allStudents; studentPage=1;
-        document.getElementById('studentSearch').value=''; renderStudentTable();
+document.getElementById('studentSearch').value='';
+populateStudentFilterDropdowns();
+renderStudentTable();
     } catch(e) {
         tbody.innerHTML=`<tr><td colspan="10" style="color:#dc3545;padding:20px;text-align:center;">Failed to load.</td></tr>`;
     }
@@ -714,13 +729,58 @@ function renderStudentTable() {
     renderPagination('studentPagination', studentPage, tp, filteredStudents.length, 'goToStudentPage');
 }
 function goToStudentPage(p){ const tp=Math.ceil(filteredStudents.length/STUDENTS_PER_PAGE); if(p<1||p>tp) return; studentPage=p; renderStudentTable(); }
-function filterStudents(q){
-    q=q.trim().toLowerCase();
-    filteredStudents=!q?allStudents:allStudents.filter(s=>
-        (s.first_name||'').toLowerCase().includes(q)||(s.last_name||'').toLowerCase().includes(q)||
-        (s.middle_name||'').toLowerCase().includes(q)||(s.student_number||'').toLowerCase().includes(q));
-    studentPage=1; renderStudentTable();
+function populateStudentFilterDropdowns() {
+    const grades   = [...new Set(allStudents.map(s => s.grade_level).filter(Boolean))].sort((a,b)=>parseInt(a)-parseInt(b));
+    const sections = [...new Set(allStudents.map(s => s.section_name).filter(Boolean))].sort();
+
+    const gSel = document.getElementById('studentGradeFilter');
+    const sSel = document.getElementById('studentSectionFilter');
+
+    const gVal = gSel.value;
+    const sVal = sSel.value;
+
+    gSel.innerHTML = '<option value="">Grade</option>' + grades.map(g=>`<option value="${g}" ${g===gVal?'selected':''}>Grade ${g}</option>`).join('');
+    sSel.innerHTML = '<option value="">Section</option>' + sections.map(s=>`<option value="${s}" ${s===sVal?'selected':''}>${s}</option>`).join('');
 }
+
+function applyStudentFilters() {
+    const q     = (document.getElementById('studentSearch').value || '').trim().toLowerCase();
+    const grade = document.getElementById('studentGradeFilter').value;
+    const sec   = document.getElementById('studentSectionFilter').value;
+    const alpha = document.getElementById('studentAlphaFilter').value;
+
+    let list = allStudents.filter(s => {
+        const matchQ = !q ||
+            (s.first_name||'').toLowerCase().includes(q) ||
+            (s.last_name||'').toLowerCase().includes(q)  ||
+            (s.middle_name||'').toLowerCase().includes(q)||
+            (s.student_number||'').toLowerCase().includes(q);
+        const matchG = !grade || s.grade_level === grade;
+        const matchS = !sec   || s.section_name === sec;
+        return matchQ && matchG && matchS;
+    });
+
+    if (alpha === 'az')       list.sort((a,b)=>(a.last_name||'').localeCompare(b.last_name||''));
+    else if (alpha === 'za')  list.sort((a,b)=>(b.last_name||'').localeCompare(a.last_name||''));
+    else if (alpha === 'num-asc')  list.sort((a,b)=>(a.student_number||'').localeCompare(b.student_number||'', undefined, {numeric:true}));
+    else if (alpha === 'num-desc') list.sort((a,b)=>(b.student_number||'').localeCompare(a.student_number||'', undefined, {numeric:true}));
+
+    filteredStudents = list;
+    studentPage = 1;
+    renderStudentTable();
+}
+
+function clearStudentFilters() {
+    document.getElementById('studentSearch').value = '';
+    document.getElementById('studentGradeFilter').value = '';
+    document.getElementById('studentSectionFilter').value = '';
+    document.getElementById('studentAlphaFilter').value = '';
+    filteredStudents = allStudents;
+    studentPage = 1;
+    renderStudentTable();
+}
+
+function filterStudents(q) { applyStudentFilters(); } // legacy shim — keeps any old calls working
 
 // Student Modal
 async function openStudentModal(data=null) {
