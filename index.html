@@ -277,14 +277,9 @@
                 <div class="activity-table-wrapper">
                     <table class="activity-table">
                         <thead><tr><th>Date</th><th>Time</th><th>Activity</th><th>Performed by</th></tr></thead>
-                        <tbody>
-                            <tr><td>12/15/2024</td><td>9:45 AM</td><td>Uploaded Section List</td><td>ITPersonnel_01</td></tr>
-                            <tr><td>12/15/2024</td><td>9:55 AM</td><td>Uploaded Teacher List</td><td>ITPersonnel_01</td></tr>
-                            <tr><td>12/15/2024</td><td>10:00 AM</td><td>Uploaded Student List</td><td>ITPersonnel_01</td></tr>
-                            <tr><td>01/10/2025</td><td>10:20 AM</td><td>Updated Teachers List</td><td>ITPersonnel_02</td></tr>
-                            <tr><td>01/10/2025</td><td>1:00 PM</td><td>Updated Student List</td><td>ITPersonnel_02</td></tr>
-                            <tr><td></td><td></td><td></td><td></td></tr>
-                        </tbody>
+                        <tbody id="activityTableBody">
+    <tr><td colspan="4" style="text-align:center;color:#aaa;padding:20px;">Loading...</td></tr>
+</tbody>
                     </table>
                 </div>
             </div>
@@ -563,7 +558,7 @@ function updateTopBar(icon, title, subtitle) {
 function updateActiveNav(i) {
     document.querySelectorAll('.nav-item').forEach((el, idx) => el.classList.toggle('active', idx === i));
 }
-function navigateToDashboard()       { hideAllPages(); document.getElementById('dashboardPage').classList.remove('hidden'); updateActiveNav(0); updateTopBar('🏠','Dashboard','Welcome Back, Admin!'); loadDashboardStats(); }
+function navigateToDashboard() { hideAllPages(); document.getElementById('dashboardPage').classList.remove('hidden'); updateActiveNav(0); updateTopBar('🏠','Dashboard','Welcome Back, Admin!'); loadDashboardStats(); loadRecentActivity(); }
 function navigateToManageMasterData(){ hideAllPages(); document.getElementById('manageMasterDataPage').classList.remove('hidden'); updateActiveNav(1); updateTopBar('📊','Manage Master Data',''); }
 function navigateToStudentList()     { hideAllPages(); document.getElementById('studentListPage').classList.remove('hidden'); updateActiveNav(1); updateTopBar('📊','Student List',''); filteredStudents=[]; loadStudentList(); }
 function navigateToTeacherList()     { hideAllPages(); document.getElementById('teacherListPage').classList.remove('hidden'); updateActiveNav(1); updateTopBar('📊','Teacher List',''); loadTeacherList(); }
@@ -581,6 +576,32 @@ async function loadDashboardStats() {
         document.getElementById('statTeachers').textContent = t.teachers?.length ?? '—';
         document.getElementById('statSections').textContent = sec.sections?.length ?? '—';
     } catch(e) { console.error(e); }
+}
+
+async function loadRecentActivity() {
+    const tbody = document.getElementById('activityTableBody');
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#aaa;padding:20px;">Loading...</td></tr>';
+    try {
+        const res  = await apiFetch(`${API_BASE}/get_activity_log.php?limit=10`);
+        const data = await res.json();
+        if (!data.success || !data.logs || !data.logs.length) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#aaa;padding:20px;">No recent activity.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.logs.map(log => {
+            const dt   = new Date(log.created_at);
+            const date = isNaN(dt) ? log.created_at : dt.toLocaleDateString('en-PH', {month:'2-digit',day:'2-digit',year:'numeric'});
+            const time = isNaN(dt) ? '' : dt.toLocaleTimeString('en-PH', {hour:'2-digit',minute:'2-digit'});
+            return `<tr>
+                <td>${date}</td>
+                <td>${time}</td>
+                <td>${log.activity || '—'}</td>
+                <td>${log.performed_by || '—'}</td>
+            </tr>`;
+        }).join('');
+    } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#dc3545;padding:20px;">Failed to load activity.</td></tr>';
+    }
 }
 
 // ── User Dropdown ───────────────────────────────────────────────────────────
@@ -1070,6 +1091,7 @@ function handleTeacherUpload(e){ const f=e.target.files[0]; e.target.value=''; h
 function handleSectionUpload(e){ const f=e.target.files[0]; e.target.value=''; handleUpload(f,'upload_sections.php','sectionUploadStatus',loadSectionList); }
 
 loadDashboardStats();
+loadRecentActivity();
 </script>
 </body>
 </html>
