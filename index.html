@@ -167,6 +167,67 @@
 .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
         .page-info { font-size:13px; color:var(--dark-navy); font-weight:500; }
 
+/* Filter pill group */
+.filter-pill-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.filter-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--white);
+    border: 1.5px solid rgba(61,53,103,0.18);
+    border-radius: 999px;
+    padding: 6px 14px 6px 10px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.filter-pill:focus-within {
+    border-color: var(--navy);
+    box-shadow: 0 0 0 3px rgba(61,53,103,0.1);
+}
+.filter-pill.active {
+    border-color: var(--gold);
+    background: rgba(212,166,80,0.07);
+}
+.filter-pill-icon {
+    font-size: 14px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.filter-pill-select {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--dark-navy);
+    cursor: pointer;
+    padding-right: 4px;
+    min-width: 90px;
+}
+.filter-pill-select option { font-weight: 400; }
+.filter-clear-btn {
+    background: rgba(220,53,69,0.08);
+    color: #c0392b;
+    border: 1.5px solid rgba(220,53,69,0.2);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.filter-clear-btn:hover {
+    background: rgba(220,53,69,0.15);
+    border-color: rgba(220,53,69,0.4);
+}
+
         /* CRUD buttons */
         .btn-edit {
     background: #ede9fe;
@@ -351,25 +412,36 @@
                         <button class="action-button" onclick="document.getElementById('studentCsvInput').click()">Upload List</button>
                         <button class="action-button" onclick="openStudentModal()">Add Student</button>
                     </div>
-                    <div class="search-filter-row">
-    <div class="search-box">
+                    <div class="search-filter-row" style="flex-wrap:wrap; gap:10px;">
+    <div class="search-box" style="flex:1; min-width:220px;">
         <span class="search-icon">🔍</span>
         <input type="text" placeholder="Search by name or student number" class="search-input" id="studentSearch" oninput="applyStudentFilters()" autocomplete="off">
     </div>
-    <select class="filter-dropdown" id="studentGradeFilter" onchange="applyStudentFilters()">
-        <option value="">Grade</option>
-    </select>
-    <select class="filter-dropdown" id="studentSectionFilter" onchange="applyStudentFilters()">
-        <option value="">Section</option>
-    </select>
-    <select class="filter-dropdown" id="studentAlphaFilter" onchange="applyStudentFilters()">
-        <option value="">A–Z</option>
-        <option value="az">Name A→Z</option>
-        <option value="za">Name Z→A</option>
-        <option value="num-asc">No. Asc</option>
-        <option value="num-desc">No. Desc</option>
-    </select>
-    <button class="action-button" onclick="clearStudentFilters()" style="padding:10px 20px;font-size:13px;border-radius:8px;">Clear</button>
+    <div class="filter-pill-group">
+        <div class="filter-pill">
+            <span class="filter-pill-icon">🎓</span>
+            <select class="filter-pill-select" id="studentGradeFilter" onchange="onStudentGradeChange()">
+                <option value="">All Grades</option>
+            </select>
+        </div>
+        <div class="filter-pill">
+            <span class="filter-pill-icon">🏫</span>
+            <select class="filter-pill-select" id="studentSectionFilter" onchange="applyStudentFilters()">
+                <option value="">All Sections</option>
+            </select>
+        </div>
+        <div class="filter-pill">
+            <span class="filter-pill-icon">↕️</span>
+            <select class="filter-pill-select" id="studentAlphaFilter" onchange="applyStudentFilters()">
+                <option value="">Sort</option>
+                <option value="az">Name A → Z</option>
+                <option value="za">Name Z → A</option>
+                <option value="num-asc">No. Ascending</option>
+                <option value="num-desc">No. Descending</option>
+            </select>
+        </div>
+        <button class="filter-clear-btn" onclick="clearStudentFilters()">✕ Clear</button>
+    </div>
 </div>
                 </div>
                 <div id="studentUploadStatus" style="display:none;margin-bottom:16px;padding:14px 20px;border-radius:8px;font-size:14px;font-weight:500;"></div>
@@ -729,18 +801,31 @@ function renderStudentTable() {
     renderPagination('studentPagination', studentPage, tp, filteredStudents.length, 'goToStudentPage');
 }
 function goToStudentPage(p){ const tp=Math.ceil(filteredStudents.length/STUDENTS_PER_PAGE); if(p<1||p>tp) return; studentPage=p; renderStudentTable(); }
-function populateStudentFilterDropdowns() {
-    const grades   = [...new Set(allStudents.map(s => s.grade_level).filter(Boolean))].sort((a,b)=>parseInt(a)-parseInt(b));
-    const sections = [...new Set(allStudents.map(s => s.section_name).filter(Boolean))].sort();
-
+function populateStudentFilterDropdowns(keepGrade, keepSection) {
+    const grades = [...new Set(allStudents.map(s => s.grade_level).filter(Boolean))]
+        .sort((a, b) => parseInt(a) - parseInt(b));
     const gSel = document.getElementById('studentGradeFilter');
+    gSel.innerHTML = '<option value="">All Grades</option>' +
+        grades.map(g => `<option value="${g}" ${g === keepGrade ? 'selected' : ''}>Grade ${g}</option>`).join('');
+    populateSectionDropdown(keepGrade, keepSection);
+    updateFilterPillStates();
+}
+
+function populateSectionDropdown(grade, keepSection) {
+    const source = grade
+        ? allStudents.filter(s => s.grade_level === grade)
+        : allStudents;
+    const sections = [...new Set(source.map(s => s.section_name).filter(Boolean))].sort();
     const sSel = document.getElementById('studentSectionFilter');
+    sSel.innerHTML = '<option value="">All Sections</option>' +
+        sections.map(s => `<option value="${s}" ${s === keepSection ? 'selected' : ''}>${s}</option>`).join('');
+}
 
-    const gVal = gSel.value;
-    const sVal = sSel.value;
-
-    gSel.innerHTML = '<option value="">Grade</option>' + grades.map(g=>`<option value="${g}" ${g===gVal?'selected':''}>Grade ${g}</option>`).join('');
-    sSel.innerHTML = '<option value="">Section</option>' + sections.map(s=>`<option value="${s}" ${s===sVal?'selected':''}>${s}</option>`).join('');
+function onStudentGradeChange() {
+    const grade = document.getElementById('studentGradeFilter').value;
+    document.getElementById('studentSectionFilter').value = '';
+    populateSectionDropdown(grade, '');
+    applyStudentFilters();
 }
 
 function applyStudentFilters() {
@@ -760,27 +845,38 @@ function applyStudentFilters() {
         return matchQ && matchG && matchS;
     });
 
-    if (alpha === 'az')       list.sort((a,b)=>(a.last_name||'').localeCompare(b.last_name||''));
-    else if (alpha === 'za')  list.sort((a,b)=>(b.last_name||'').localeCompare(a.last_name||''));
-    else if (alpha === 'num-asc')  list.sort((a,b)=>(a.student_number||'').localeCompare(b.student_number||'', undefined, {numeric:true}));
-    else if (alpha === 'num-desc') list.sort((a,b)=>(b.student_number||'').localeCompare(a.student_number||'', undefined, {numeric:true}));
+    if (alpha === 'az')            list.sort((a,b) => (a.last_name||'').localeCompare(b.last_name||''));
+    else if (alpha === 'za')       list.sort((a,b) => (b.last_name||'').localeCompare(a.last_name||''));
+    else if (alpha === 'num-asc')  list.sort((a,b) => (a.student_number||'').localeCompare(b.student_number||'', undefined, {numeric:true}));
+    else if (alpha === 'num-desc') list.sort((a,b) => (b.student_number||'').localeCompare(a.student_number||'', undefined, {numeric:true}));
 
     filteredStudents = list;
     studentPage = 1;
+    updateFilterPillStates();
     renderStudentTable();
+}
+
+function updateFilterPillStates() {
+    const grade = document.getElementById('studentGradeFilter').value;
+    const sec   = document.getElementById('studentSectionFilter').value;
+    const alpha = document.getElementById('studentAlphaFilter').value;
+    document.getElementById('studentGradeFilter').closest('.filter-pill').classList.toggle('active', !!grade);
+    document.getElementById('studentSectionFilter').closest('.filter-pill').classList.toggle('active', !!sec);
+    document.getElementById('studentAlphaFilter').closest('.filter-pill').classList.toggle('active', !!alpha);
 }
 
 function clearStudentFilters() {
     document.getElementById('studentSearch').value = '';
     document.getElementById('studentGradeFilter').value = '';
-    document.getElementById('studentSectionFilter').value = '';
     document.getElementById('studentAlphaFilter').value = '';
+    populateSectionDropdown('', '');
     filteredStudents = allStudents;
     studentPage = 1;
+    updateFilterPillStates();
     renderStudentTable();
 }
 
-function filterStudents(q) { applyStudentFilters(); } // legacy shim — keeps any old calls working
+function filterStudents(q) { applyStudentFilters(); }
 
 // Student Modal
 async function openStudentModal(data=null) {
