@@ -33,6 +33,31 @@
         .nav-item.active {
     border-left-color: var(--gold);  /* ADD THIS */
 }
+
+.quarter-select-btn {
+    width: 70px; height: 70px;
+    border-radius: 12px;
+    border: 2.5px solid rgba(61,53,103,0.2);
+    background: var(--white);
+    font-family: 'Outfit', sans-serif;
+    font-size: 18px; font-weight: 700;
+    color: var(--dark-navy);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.quarter-select-btn:hover {
+    border-color: var(--navy);
+    background: rgba(61,53,103,0.06);
+}
+.quarter-select-btn.active {
+    background: var(--dark-navy);
+    color: var(--gold);
+    border-color: var(--dark-navy);
+}
+.quarter-select-btn.current {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(212,166,80,0.25);
+}
         
 
         /* Main */
@@ -339,6 +364,9 @@
         <a href="#" class="nav-sub-item" onclick="navTo(event, navigateToTeacherList)">Teacher List</a>
         <a href="#" class="nav-sub-item" onclick="navTo(event, navigateToSectionList)">Section List</a>
     </div>
+    <a href="#" class="nav-item" onclick="navigateToSettings(event)">
+    <span class="nav-icon">⚙️</span><span>Settings</span>
+</a>
 </nav>
     </aside>
 
@@ -520,6 +548,147 @@
                 <div class="pagination-wrapper" id="sectionPagination"></div>
             </div>
         </div>
+        <!-- Settings Page -->
+<div id="settingsPage" class="dashboard-content hidden">
+    <div style="max-width:700px;margin:0 auto;">
+
+        <div style="margin-bottom:32px;">
+            <h2 style="font-size:26px;font-weight:700;color:var(--dark-navy);margin-bottom:6px;">
+                ⚙️ System Settings
+            </h2>
+            <p style="font-size:14px;color:#888;">
+                Manage the active quarter. Switching archives the current quarter's data.
+                All past quarters remain viewable below.
+            </p>
+        </div>
+
+        <!-- Active Quarter Card -->
+        <div style="background:var(--light-gray);border-radius:16px;padding:36px 40px;margin-bottom:24px;">
+            <h3 style="font-size:17px;font-weight:700;color:var(--dark-navy);margin-bottom:20px;">
+                📅 Active Quarter
+            </h3>
+
+            <div style="display:flex;align-items:center;gap:20px;margin-bottom:28px;">
+                <div style="background:var(--dark-navy);border-radius:12px;padding:20px 36px;text-align:center;flex-shrink:0;">
+                    <div style="font-size:12px;color:rgba(212,166,80,0.7);font-weight:600;
+                                text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
+                        Currently Active
+                    </div>
+                    <div id="settingsCurrentQuarterDisplay"
+                         style="font-size:48px;font-weight:700;color:var(--gold);line-height:1;">
+                        —
+                    </div>
+                    <div style="font-size:13px;color:rgba(212,166,80,0.6);margin-top:4px;">Quarter</div>
+                </div>
+                <div style="flex:1;">
+                    <div id="settingsQuarterDescription"
+                         style="font-size:14px;color:#666;line-height:1.7;">
+                        Loading quarter info…
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quarter buttons -->
+            <label style="font-size:13px;font-weight:600;color:var(--dark-navy);display:block;margin-bottom:12px;">
+                Select New Quarter:
+            </label>
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <button onclick="selectQuarter(1)" id="qBtn1" class="quarter-select-btn">Q1</button>
+                <button onclick="selectQuarter(2)" id="qBtn2" class="quarter-select-btn">Q2</button>
+                <button onclick="selectQuarter(3)" id="qBtn3" class="quarter-select-btn">Q3</button>
+                <button onclick="selectQuarter(4)" id="qBtn4" class="quarter-select-btn">Q4</button>
+            </div>
+
+            <!-- Warning -->
+            <div id="quarterWarningBox"
+                 style="display:none;background:#fff3cd;border:1.5px solid #ffc107;
+                        border-radius:10px;padding:16px 20px;margin-bottom:20px;
+                        font-size:13px;color:#856404;line-height:1.6;">
+                ⚠️ <strong>Switching quarters will archive the current quarter's data.</strong><br>
+                All offense reports, referrals, document submissions, and requests recorded in
+                <span id="warningFromQ">Q1</span> will be saved and viewable in the Archive.
+                New records will be stamped under <span id="warningToQ">Q2</span>.
+            </div>
+
+            <!-- Confirm button -->
+            <div style="display:flex;justify-content:flex-end;">
+                <button id="confirmQuarterBtn"
+                        onclick="confirmQuarterChange()"
+                        style="display:none;padding:13px 40px;background:var(--dark-navy);
+                               color:var(--gold);border:none;border-radius:10px;
+                               font-family:'Outfit',sans-serif;font-size:15px;
+                               font-weight:700;cursor:pointer;transition:all 0.2s;">
+                    Apply Quarter Change
+                </button>
+            </div>
+
+            <!-- Success -->
+            <div id="quarterSuccessMsg"
+                 style="display:none;background:#d4edda;border:1.5px solid #28a745;
+                        border-radius:10px;padding:14px 20px;font-size:14px;
+                        color:#155724;font-weight:500;text-align:center;margin-top:12px;">
+                ✅ Quarter updated successfully!
+            </div>
+        </div>
+
+        <!-- Archive Viewer Card -->
+        <div style="background:var(--light-gray);border-radius:16px;padding:36px 40px;">
+            <h3 style="font-size:17px;font-weight:700;color:var(--dark-navy);margin-bottom:6px;">
+                🗂️ View Archived Quarter
+            </h3>
+            <p style="font-size:13px;color:#888;margin-bottom:20px;">
+                Browse record counts from any quarter. Data is never deleted.
+            </p>
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:20px;">
+                <select id="archiveQuarterSelect"
+                        style="padding:11px 20px;border:1.5px solid #ccc;border-radius:8px;
+                               font-family:'Outfit',sans-serif;font-size:14px;
+                               color:var(--dark-navy);background:var(--white);cursor:pointer;">
+                    <option value="">— Select Quarter to View —</option>
+                    <option value="1">Quarter 1</option>
+                    <option value="2">Quarter 2</option>
+                    <option value="3">Quarter 3</option>
+                    <option value="4">Quarter 4</option>
+                </select>
+                <button onclick="viewArchivedQuarter()"
+                        style="padding:11px 28px;background:var(--dark-navy);color:var(--gold);
+                               border:none;border-radius:8px;font-family:'Outfit',sans-serif;
+                               font-size:14px;font-weight:600;cursor:pointer;">
+                    View Archive
+                </button>
+            </div>
+
+            <div id="archiveStatsBox"
+                 style="display:none;grid-template-columns:repeat(4,1fr);gap:14px;">
+                <div style="background:var(--dark-navy);border-radius:10px;padding:18px;text-align:center;">
+                    <div style="font-size:11px;color:rgba(212,166,80,0.7);font-weight:600;
+                                text-transform:uppercase;margin-bottom:6px;">Offenses</div>
+                    <div id="archiveStatOffenses"
+                         style="font-size:28px;font-weight:700;color:var(--gold);">—</div>
+                </div>
+                <div style="background:var(--dark-navy);border-radius:10px;padding:18px;text-align:center;">
+                    <div style="font-size:11px;color:rgba(212,166,80,0.7);font-weight:600;
+                                text-transform:uppercase;margin-bottom:6px;">Referrals</div>
+                    <div id="archiveStatReferrals"
+                         style="font-size:28px;font-weight:700;color:var(--gold);">—</div>
+                </div>
+                <div style="background:var(--dark-navy);border-radius:10px;padding:18px;text-align:center;">
+                    <div style="font-size:11px;color:rgba(212,166,80,0.7);font-weight:600;
+                                text-transform:uppercase;margin-bottom:6px;">Doc Submissions</div>
+                    <div id="archiveStatSubmissions"
+                         style="font-size:28px;font-weight:700;color:var(--gold);">—</div>
+                </div>
+                <div style="background:var(--dark-navy);border-radius:10px;padding:18px;text-align:center;">
+                    <div style="font-size:11px;color:rgba(212,166,80,0.7);font-weight:600;
+                                text-transform:uppercase;margin-bottom:6px;">Doc Requests</div>
+                    <div id="archiveStatRequests"
+                         style="font-size:28px;font-weight:700;color:var(--gold);">—</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
     </main>
 </div>
 
@@ -672,7 +841,8 @@ async function apiFetch(url, options = {}) {
 
 // ── Navigation ──────────────────────────────────────────────────────────────
 function hideAllPages() {
-    ['dashboardPage','manageMasterDataPage','studentListPage','teacherListPage','sectionListPage']
+    ['dashboardPage','manageMasterDataPage','studentListPage','teacherListPage',
+     'sectionListPage','settingsPage']
         .forEach(id => document.getElementById(id).classList.add('hidden'));
 }
 function updateTopBar(icon, title, subtitle) {
@@ -709,6 +879,146 @@ async function loadDashboardStats() {
         document.getElementById('statTeachers').textContent = t.teachers?.length ?? '—';
         document.getElementById('statSections').textContent = sec.sections?.length ?? '—';
     } catch(e) { console.error(e); }
+}
+
+// ── QUARTER SETTINGS ──────────────────────────────────────────────────────────
+let _activeQuarter   = 1;
+let _selectedQuarter = 1;
+
+const quarterLabels = {
+    1: 'First Quarter — covers the opening months of the school year.',
+    2: 'Second Quarter — mid-year period. Q1 data is now archived.',
+    3: 'Third Quarter — second semester begins. Q1–Q2 are archived.',
+    4: 'Fourth Quarter — final period of the school year. Q1–Q3 are archived.',
+};
+
+async function loadActiveQuarter() {
+    try {
+        const res  = await apiFetch(`${API_BASE}/get_quarter.php`);
+        const data = await res.json();
+        _activeQuarter   = data.quarter || 1;
+        _selectedQuarter = _activeQuarter;
+    } catch(e) {
+        _activeQuarter   = 1;
+        _selectedQuarter = 1;
+    }
+}
+
+function navigateToSettings(event) {
+    if (event) event.preventDefault();
+    hideAllPages();
+    document.getElementById('settingsPage').classList.remove('hidden');
+    updateTopBar('⚙️', 'Settings', 'Manage quarter and system configuration');
+    // deactivate all nav items, activate last one (Settings)
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(el => el.classList.remove('active'));
+    navItems[navItems.length - 1].classList.add('active');
+    renderSettingsPage();
+}
+
+async function renderSettingsPage() {
+    await loadActiveQuarter();
+
+    document.getElementById('settingsCurrentQuarterDisplay').textContent = _activeQuarter;
+    document.getElementById('settingsQuarterDescription').textContent    = quarterLabels[_activeQuarter] || '';
+
+    _selectedQuarter = _activeQuarter;
+    updateQuarterButtons();
+
+    document.getElementById('quarterWarningBox').style.display  = 'none';
+    document.getElementById('confirmQuarterBtn').style.display  = 'none';
+    document.getElementById('quarterSuccessMsg').style.display  = 'none';
+    document.getElementById('archiveStatsBox').style.display    = 'none';
+}
+
+function selectQuarter(q) {
+    _selectedQuarter = q;
+    updateQuarterButtons();
+
+    const warningBox = document.getElementById('quarterWarningBox');
+    const confirmBtn = document.getElementById('confirmQuarterBtn');
+    const successMsg = document.getElementById('quarterSuccessMsg');
+
+    successMsg.style.display = 'none';
+
+    if (q !== _activeQuarter) {
+        document.getElementById('warningFromQ').textContent = 'Q' + _activeQuarter;
+        document.getElementById('warningToQ').textContent   = 'Q' + q;
+        warningBox.style.display = 'block';
+        confirmBtn.style.display = 'block';
+    } else {
+        warningBox.style.display = 'none';
+        confirmBtn.style.display = 'none';
+    }
+}
+
+function updateQuarterButtons() {
+    [1, 2, 3, 4].forEach(q => {
+        const btn = document.getElementById('qBtn' + q);
+        if (!btn) return;
+        btn.classList.remove('active', 'current');
+        if (q === _selectedQuarter) btn.classList.add('active');
+        if (q === _activeQuarter)   btn.classList.add('current');
+    });
+}
+
+async function confirmQuarterChange() {
+    const btn = document.getElementById('confirmQuarterBtn');
+    btn.disabled    = true;
+    btn.textContent = 'Saving…';
+
+    try {
+        const res  = await apiFetch(`${API_BASE}/save_quarter.php`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ quarter: _selectedQuarter })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            _activeQuarter = _selectedQuarter;
+            document.getElementById('settingsCurrentQuarterDisplay').textContent = _activeQuarter;
+            document.getElementById('settingsQuarterDescription').textContent    = quarterLabels[_activeQuarter];
+            document.getElementById('quarterWarningBox').style.display           = 'none';
+            document.getElementById('quarterSuccessMsg').style.display           = 'block';
+            btn.style.display = 'none';
+            updateQuarterButtons();
+        } else {
+            alert('Failed to save: ' + (data.message || 'Unknown error'));
+            btn.disabled    = false;
+            btn.textContent = 'Apply Quarter Change';
+        }
+    } catch(e) {
+        alert('Network error. Please try again.');
+        btn.disabled    = false;
+        btn.textContent = 'Apply Quarter Change';
+    }
+}
+
+async function viewArchivedQuarter() {
+    const q = document.getElementById('archiveQuarterSelect').value;
+    if (!q) { alert('Please select a quarter to view.'); return; }
+
+    const box = document.getElementById('archiveStatsBox');
+    box.style.display = 'grid';
+    ['archiveStatOffenses','archiveStatReferrals',
+     'archiveStatSubmissions','archiveStatRequests']
+        .forEach(id => { document.getElementById(id).textContent = '…'; });
+
+    try {
+        const res  = await apiFetch(`${API_BASE}/get_archive_stats.php?quarter=${q}`);
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('archiveStatOffenses').textContent    = data.offenses    ?? '—';
+            document.getElementById('archiveStatReferrals').textContent   = data.referrals   ?? '—';
+            document.getElementById('archiveStatSubmissions').textContent = data.submissions ?? '—';
+            document.getElementById('archiveStatRequests').textContent    = data.requests    ?? '—';
+        } else {
+            alert('Failed to load archive: ' + (data.message || 'Unknown error'));
+        }
+    } catch(e) {
+        alert('Network error loading archive stats.');
+    }
 }
 
 async function loadRecentActivity() {
@@ -1313,6 +1623,7 @@ function handleSectionUpload(e){ const f=e.target.files[0]; e.target.value=''; h
 
 loadDashboardStats();
 loadRecentActivity();
+loadActiveQuarter();
 </script>
 </body>
 </html>
