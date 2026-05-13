@@ -549,7 +549,7 @@
             </div>
         </div>
 <!-- Settings Page -->
-<div id="settingsPage" class="dashboard-content hidden" style="padding:0 !important; flex:1 !important; display:flex !important; flex-direction:column !important; flex-shrink:0 !important; min-height:unset !important;">
+<div id="settingsPage" class="dashboard-content hidden" style="padding:0 !important; flex:1 !important; flex-direction:column !important; flex-shrink:0 !important; min-height:unset !important;">
   <div style="display:flex; flex-direction:column; flex:1; gap:16px; padding:24px 40px; box-sizing:border-box; min-height:calc(100vh - 88px);">
 
     <!-- Title -->
@@ -862,7 +862,11 @@ async function apiFetch(url, options = {}) {
 function hideAllPages() {
     ['dashboardPage','manageMasterDataPage','studentListPage','teacherListPage',
      'sectionListPage','settingsPage']
-        .forEach(id => document.getElementById(id).classList.add('hidden'));
+        .forEach(id => {
+            const el = document.getElementById(id);
+            el.classList.add('hidden');
+            el.style.display = ''; // clear any inline display so .hidden takes over
+        });
 }
 function updateTopBar(icon, title, subtitle) {
     document.querySelector('.page-icon').textContent = icon;
@@ -926,9 +930,10 @@ async function loadActiveQuarter() {
 function navigateToSettings(event) {
     if (event) event.preventDefault();
     hideAllPages();
-    document.getElementById('settingsPage').classList.remove('hidden');
+    const settingsEl = document.getElementById('settingsPage');
+    settingsEl.classList.remove('hidden');
+    settingsEl.style.display = 'flex'; // restore flex after unhide
     updateTopBar('⚙️', 'Settings', 'Manage quarter and system configuration');
-    // deactivate all nav items, activate last one (Settings)
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(el => el.classList.remove('active'));
     navItems[navItems.length - 1].classList.add('active');
