@@ -550,144 +550,195 @@
         </div>
         <!-- Settings Page -->
 <div id="settingsPage" class="dashboard-content hidden">
-    <div style="max-width:700px;margin:0 auto;">
+  <div style="max-width:700px;margin:0 auto;">
 
-        <div style="margin-bottom:32px;">
-            <h2 style="font-size:26px;font-weight:700;color:var(--dark-navy);margin-bottom:6px;">
-                ⚙️ System Settings
-            </h2>
-            <p style="font-size:14px;color:#888;">
-                Manage the active quarter. Switching archives the current quarter's data.
-                All past quarters remain viewable below.
-            </p>
-        </div>
-
-        <!-- Active Quarter Card -->
-        <div style="background:var(--light-gray);border-radius:16px;padding:36px 40px;margin-bottom:24px;">
-            <h3 style="font-size:17px;font-weight:700;color:var(--dark-navy);margin-bottom:20px;">
-                📅 Active Quarter
-            </h3>
-
-            <div style="display:flex;align-items:center;gap:20px;margin-bottom:28px;">
-                <div style="background:var(--dark-navy);border-radius:12px;padding:20px 36px;text-align:center;flex-shrink:0;">
-                    <div style="font-size:12px;color:rgba(212,166,80,0.7);font-weight:600;
-                                text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
-                        Currently Active
-                    </div>
-                    <div id="settingsCurrentQuarterDisplay"
-                         style="font-size:48px;font-weight:700;color:var(--gold);line-height:1;">
-                        —
-                    </div>
-                    <div style="font-size:13px;color:rgba(212,166,80,0.6);margin-top:4px;">Quarter</div>
-                </div>
-                <div style="flex:1;">
-                    <div id="settingsQuarterDescription"
-                         style="font-size:14px;color:#666;line-height:1.7;">
-                        Loading quarter info…
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quarter buttons -->
-            <label style="font-size:13px;font-weight:600;color:var(--dark-navy);display:block;margin-bottom:12px;">
-                Select New Quarter:
-            </label>
-            <div style="display:flex;gap:12px;margin-bottom:20px;">
-                <button onclick="selectQuarter(1)" id="qBtn1" class="quarter-select-btn">Q1</button>
-                <button onclick="selectQuarter(2)" id="qBtn2" class="quarter-select-btn">Q2</button>
-                <button onclick="selectQuarter(3)" id="qBtn3" class="quarter-select-btn">Q3</button>
-                <button onclick="selectQuarter(4)" id="qBtn4" class="quarter-select-btn">Q4</button>
-            </div>
-
-            <!-- Warning -->
-            <div id="quarterWarningBox"
-                 style="display:none;background:#fff3cd;border:1.5px solid #ffc107;
-                        border-radius:10px;padding:16px 20px;margin-bottom:20px;
-                        font-size:13px;color:#856404;line-height:1.6;">
-                ⚠️ <strong>Switching quarters will archive the current quarter's data.</strong><br>
-                All offense reports, referrals, document submissions, and requests recorded in
-                <span id="warningFromQ">Q1</span> will be saved and viewable in the Archive.
-                New records will be stamped under <span id="warningToQ">Q2</span>.
-            </div>
-
-            <!-- Confirm button -->
-            <div style="display:flex;justify-content:flex-end;">
-                <button id="confirmQuarterBtn"
-                        onclick="confirmQuarterChange()"
-                        style="display:none;padding:13px 40px;background:var(--dark-navy);
-                               color:var(--gold);border:none;border-radius:10px;
-                               font-family:'Outfit',sans-serif;font-size:15px;
-                               font-weight:700;cursor:pointer;transition:all 0.2s;">
-                    Apply Quarter Change
-                </button>
-            </div>
-
-            <!-- Success -->
-            <div id="quarterSuccessMsg"
-                 style="display:none;background:#d4edda;border:1.5px solid #28a745;
-                        border-radius:10px;padding:14px 20px;font-size:14px;
-                        color:#155724;font-weight:500;text-align:center;margin-top:12px;">
-                ✅ Quarter updated successfully!
-            </div>
-        </div>
-
-        <!-- Archive Viewer Card -->
-        <div style="background:var(--light-gray);border-radius:16px;padding:36px 40px;">
-            <h3 style="font-size:17px;font-weight:700;color:var(--dark-navy);margin-bottom:6px;">
-                🗂️ View Archived Quarter
-            </h3>
-            <p style="font-size:13px;color:#888;margin-bottom:20px;">
-                Browse record counts from any quarter. Data is never deleted.
-            </p>
-            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:20px;">
-                <select id="archiveQuarterSelect"
-                        style="padding:11px 20px;border:1.5px solid #ccc;border-radius:8px;
-                               font-family:'Outfit',sans-serif;font-size:14px;
-                               color:var(--dark-navy);background:var(--white);cursor:pointer;">
-                    <option value="">— Select Quarter to View —</option>
-                    <option value="1">Quarter 1</option>
-                    <option value="2">Quarter 2</option>
-                    <option value="3">Quarter 3</option>
-                    <option value="4">Quarter 4</option>
-                </select>
-                <button onclick="viewArchivedQuarter()"
-                        style="padding:11px 28px;background:var(--dark-navy);color:var(--gold);
-                               border:none;border-radius:8px;font-family:'Outfit',sans-serif;
-                               font-size:14px;font-weight:600;cursor:pointer;">
-                    View Archive
-                </button>
-            </div>
-
-            <div id="archiveStatsBox"
-                 style="display:none;grid-template-columns:repeat(4,1fr);gap:14px;">
-                <div style="background:var(--dark-navy);border-radius:10px;padding:18px;text-align:center;">
-                    <div style="font-size:11px;color:rgba(212,166,80,0.7);font-weight:600;
-                                text-transform:uppercase;margin-bottom:6px;">Offenses</div>
-                    <div id="archiveStatOffenses"
-                         style="font-size:28px;font-weight:700;color:var(--gold);">—</div>
-                </div>
-                <div style="background:var(--dark-navy);border-radius:10px;padding:18px;text-align:center;">
-                    <div style="font-size:11px;color:rgba(212,166,80,0.7);font-weight:600;
-                                text-transform:uppercase;margin-bottom:6px;">Referrals</div>
-                    <div id="archiveStatReferrals"
-                         style="font-size:28px;font-weight:700;color:var(--gold);">—</div>
-                </div>
-                <div style="background:var(--dark-navy);border-radius:10px;padding:18px;text-align:center;">
-                    <div style="font-size:11px;color:rgba(212,166,80,0.7);font-weight:600;
-                                text-transform:uppercase;margin-bottom:6px;">Doc Submissions</div>
-                    <div id="archiveStatSubmissions"
-                         style="font-size:28px;font-weight:700;color:var(--gold);">—</div>
-                </div>
-                <div style="background:var(--dark-navy);border-radius:10px;padding:18px;text-align:center;">
-                    <div style="font-size:11px;color:rgba(212,166,80,0.7);font-weight:600;
-                                text-transform:uppercase;margin-bottom:6px;">Doc Requests</div>
-                    <div id="archiveStatRequests"
-                         style="font-size:28px;font-weight:700;color:var(--gold);">—</div>
-                </div>
-            </div>
-        </div>
-
+    <div style="margin-bottom:32px;">
+      <h2 style="font-size:26px;font-weight:700;color:var(--dark-navy);margin-bottom:6px;">
+        ⚙️ System Settings
+      </h2>
+      <p style="font-size:14px;color:#888;">
+        Manage the active school year and quarter. Switching archives current data.
+      </p>
     </div>
+
+    <!-- ── School Year Card ── -->
+    <div style="background:var(--light-gray);border-radius:16px;padding:36px 40px;margin-bottom:24px;">
+      <h3 style="font-size:17px;font-weight:700;color:var(--dark-navy);margin-bottom:6px;">
+        🏫 Active School Year
+      </h3>
+      <p style="font-size:13px;color:#888;margin-bottom:20px;">
+        Switching school years archives all quarter data for the current year. Records are never deleted.
+      </p>
+
+      <div style="display:flex;align-items:center;gap:20px;margin-bottom:24px;">
+        <div style="background:var(--dark-navy);border-radius:12px;padding:18px 28px;text-align:center;flex-shrink:0;">
+          <div style="font-size:11px;color:rgba(212,166,80,0.7);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Currently Active</div>
+          <div id="settingsCurrentSYDisplay" style="font-size:22px;font-weight:700;color:var(--gold);line-height:1;">—</div>
+          <div style="font-size:12px;color:rgba(212,166,80,0.6);margin-top:4px;">School Year</div>
+        </div>
+        <div id="settingsSYDescription" style="font-size:14px;color:#666;line-height:1.7;flex:1;">
+          Loading school year info…
+        </div>
+      </div>
+
+      <!-- Existing school year buttons -->
+      <label style="font-size:13px;font-weight:600;color:var(--dark-navy);display:block;margin-bottom:10px;">
+        Select school year:
+      </label>
+      <div id="syButtonGroup" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;"></div>
+
+      <!-- Add new school year -->
+      <div style="border-top:1px solid rgba(61,53,103,0.1);padding-top:20px;margin-bottom:20px;">
+        <label style="font-size:13px;font-weight:600;color:var(--dark-navy);display:block;margin-bottom:10px;">
+          Add new school year:
+        </label>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <input id="newSYInput" type="text" placeholder="e.g. 2025-2026"
+                 style="border:1.5px solid rgba(61,53,103,0.2);border-radius:8px;padding:10px 14px;
+                        font-family:'Outfit',sans-serif;font-size:14px;color:var(--dark-navy);
+                        background:#fff;outline:none;width:160px;">
+          <button onclick="addSchoolYear()"
+                  style="padding:10px 24px;background:var(--dark-navy);color:var(--gold);border:none;
+                         border-radius:8px;font-family:'Outfit',sans-serif;font-size:14px;
+                         font-weight:600;cursor:pointer;">
+            + Add School Year
+          </button>
+          <span id="addSYMsg" style="font-size:13px;color:#28a745;display:none;"></span>
+        </div>
+      </div>
+
+      <!-- Warning -->
+      <div id="syWarningBox"
+           style="display:none;background:#fff3cd;border:1.5px solid #ffc107;border-radius:10px;
+                  padding:16px 20px;margin-bottom:20px;font-size:13px;color:#856404;line-height:1.6;">
+        ⚠️ <strong>Switching school years will archive all quarter data for S.Y. <span id="syWarningFrom">—</span>.</strong><br>
+        New records will be stamped under S.Y. <span id="syWarningTo">—</span>.
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;">
+        <button id="confirmSYBtn" onclick="confirmSYChange()"
+                style="display:none;padding:13px 40px;background:var(--dark-navy);color:var(--gold);
+                       border:none;border-radius:10px;font-family:'Outfit',sans-serif;font-size:15px;
+                       font-weight:700;cursor:pointer;">
+          Apply School Year Change
+        </button>
+      </div>
+      <div id="sySuccessMsg"
+           style="display:none;background:#d4edda;border:1.5px solid #28a745;border-radius:10px;
+                  padding:14px 20px;font-size:14px;color:#155724;font-weight:500;
+                  text-align:center;margin-top:12px;">
+        ✅ School year updated successfully!
+      </div>
+    </div>
+
+    <!-- ── Quarter Card ── -->
+    <div style="background:var(--light-gray);border-radius:16px;padding:36px 40px;margin-bottom:24px;">
+      <h3 style="font-size:17px;font-weight:700;color:var(--dark-navy);margin-bottom:6px;">
+        📅 Active Quarter
+      </h3>
+      <p style="font-size:13px;color:#888;margin-bottom:20px;">
+        Quarter is scoped to the active school year.
+      </p>
+
+      <div style="display:flex;align-items:center;gap:20px;margin-bottom:28px;">
+        <div style="background:var(--dark-navy);border-radius:12px;padding:20px 36px;text-align:center;flex-shrink:0;">
+          <div style="font-size:12px;color:rgba(212,166,80,0.7);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Currently Active</div>
+          <div id="settingsCurrentQuarterDisplay" style="font-size:48px;font-weight:700;color:var(--gold);line-height:1;">—</div>
+          <div style="font-size:13px;color:rgba(212,166,80,0.6);margin-top:4px;">Quarter</div>
+        </div>
+        <div id="settingsQuarterDescription" style="font-size:14px;color:#666;line-height:1.7;">
+          Loading quarter info…
+        </div>
+      </div>
+
+      <label style="font-size:13px;font-weight:600;color:var(--dark-navy);display:block;margin-bottom:12px;">
+        Select new quarter:
+      </label>
+      <div style="display:flex;gap:12px;margin-bottom:20px;">
+        <button onclick="selectQuarter(1)" id="qBtn1" class="quarter-select-btn">Q1</button>
+        <button onclick="selectQuarter(2)" id="qBtn2" class="quarter-select-btn">Q2</button>
+        <button onclick="selectQuarter(3)" id="qBtn3" class="quarter-select-btn">Q3</button>
+        <button onclick="selectQuarter(4)" id="qBtn4" class="quarter-select-btn">Q4</button>
+      </div>
+
+      <div id="quarterWarningBox"
+           style="display:none;background:#fff3cd;border:1.5px solid #ffc107;border-radius:10px;
+                  padding:16px 20px;margin-bottom:20px;font-size:13px;color:#856404;line-height:1.6;">
+        ⚠️ <strong>Switching quarters will archive the current quarter's data.</strong><br>
+        All records in <span id="warningFromQ">Q1</span> will be saved.
+        New records will be stamped under <span id="warningToQ">Q2</span>.
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;">
+        <button id="confirmQuarterBtn" onclick="confirmQuarterChange()"
+                style="display:none;padding:13px 40px;background:var(--dark-navy);color:var(--gold);
+                       border:none;border-radius:10px;font-family:'Outfit',sans-serif;font-size:15px;
+                       font-weight:700;cursor:pointer;">
+          Apply Quarter Change
+        </button>
+      </div>
+      <div id="quarterSuccessMsg"
+           style="display:none;background:#d4edda;border:1.5px solid #28a745;border-radius:10px;
+                  padding:14px 20px;font-size:14px;color:#155724;font-weight:500;
+                  text-align:center;margin-top:12px;">
+        ✅ Quarter updated successfully!
+      </div>
+    </div>
+
+    <!-- ── Archive Viewer ── -->
+    <div style="background:var(--light-gray);border-radius:16px;padding:36px 40px;">
+      <h3 style="font-size:17px;font-weight:700;color:var(--dark-navy);margin-bottom:6px;">
+        🗂️ View Archived Data
+      </h3>
+      <p style="font-size:13px;color:#888;margin-bottom:20px;">
+        Browse record counts from any school year and quarter.
+      </p>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:20px;">
+        <select id="archiveSYSelect"
+                style="padding:11px 20px;border:1.5px solid #ccc;border-radius:8px;
+                       font-family:'Outfit',sans-serif;font-size:14px;color:var(--dark-navy);
+                       background:#fff;cursor:pointer;">
+          <option value="">— Select School Year —</option>
+        </select>
+        <select id="archiveQuarterSelect"
+                style="padding:11px 20px;border:1.5px solid #ccc;border-radius:8px;
+                       font-family:'Outfit',sans-serif;font-size:14px;color:var(--dark-navy);
+                       background:#fff;cursor:pointer;">
+          <option value="">— Select Quarter —</option>
+          <option value="1">Quarter 1</option>
+          <option value="2">Quarter 2</option>
+          <option value="3">Quarter 3</option>
+          <option value="4">Quarter 4</option>
+        </select>
+        <button onclick="viewArchivedQuarter()"
+                style="padding:11px 28px;background:var(--dark-navy);color:var(--gold);border:none;
+                       border-radius:8px;font-family:'Outfit',sans-serif;font-size:14px;
+                       font-weight:600;cursor:pointer;">
+          View Archive
+        </button>
+      </div>
+
+      <div id="archiveStatsBox" style="display:none;grid-template-columns:repeat(4,1fr);gap:14px;">
+        <div style="background:var(--dark-navy);border-radius:10px;padding:18px;text-align:center;">
+          <div style="font-size:11px;color:rgba(212,166,80,0.7);font-weight:600;text-transform:uppercase;margin-bottom:6px;">Offenses</div>
+          <div id="archiveStatOffenses" style="font-size:28px;font-weight:700;color:var(--gold);">—</div>
+        </div>
+        <div style="background:var(--dark-navy);border-radius:10px;padding:18px;text-align:center;">
+          <div style="font-size:11px;color:rgba(212,166,80,0.7);font-weight:600;text-transform:uppercase;margin-bottom:6px;">Referrals</div>
+          <div id="archiveStatReferrals" style="font-size:28px;font-weight:700;color:var(--gold);">—</div>
+        </div>
+        <div style="background:var(--dark-navy);border-radius:10px;padding:18px;text-align:center;">
+          <div style="font-size:11px;color:rgba(212,166,80,0.7);font-weight:600;text-transform:uppercase;margin-bottom:6px;">Doc Submissions</div>
+          <div id="archiveStatSubmissions" style="font-size:28px;font-weight:700;color:var(--gold);">—</div>
+        </div>
+        <div style="background:var(--dark-navy);border-radius:10px;padding:18px;text-align:center;">
+          <div style="font-size:11px;color:rgba(212,166,80,0.7);font-weight:600;text-transform:uppercase;margin-bottom:6px;">Doc Requests</div>
+          <div id="archiveStatRequests" style="font-size:28px;font-weight:700;color:var(--gold);">—</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
     </main>
 </div>
@@ -833,6 +884,9 @@
 
 <script>
 const API_BASE = 'https://tabularly-tactless-deloras.ngrok-free.dev';
+let _activeSY       = null;
+let _selectedSY     = null;
+let _allSchoolYears = [];
 
 async function apiFetch(url, options = {}) {
     const headers = { 'ngrok-skip-browser-warning': 'true', ...(options.headers || {}) };
@@ -917,20 +971,30 @@ function navigateToSettings(event) {
 }
 
 async function renderSettingsPage() {
-    await loadActiveQuarter();
+    await Promise.all([loadSchoolYears(), loadActiveQuarter()]);
 
+    // School year display
+    document.getElementById('settingsCurrentSYDisplay').textContent =
+        _activeSY ? _activeSY.label : '—';
+    document.getElementById('settingsSYDescription').textContent =
+        _activeSY
+            ? `S.Y. ${_activeSY.label} is currently active. All records are stamped under this school year.`
+            : 'No school year set.';
+
+    renderSYButtons();
+    populateArchiveSYSelect();
+
+    // Quarter display
     document.getElementById('settingsCurrentQuarterDisplay').textContent = _activeQuarter;
     document.getElementById('settingsQuarterDescription').textContent    = quarterLabels[_activeQuarter] || '';
-
     _selectedQuarter = _activeQuarter;
     updateQuarterButtons();
 
-    document.getElementById('quarterWarningBox').style.display  = 'none';
-    document.getElementById('confirmQuarterBtn').style.display  = 'none';
-    document.getElementById('quarterSuccessMsg').style.display  = 'none';
-    document.getElementById('archiveStatsBox').style.display    = 'none';
+    // Hide all warning/confirm/success boxes
+    ['syWarningBox','confirmSYBtn','sySuccessMsg',
+     'quarterWarningBox','confirmQuarterBtn','quarterSuccessMsg','archiveStatsBox']
+        .forEach(id => { document.getElementById(id).style.display = 'none'; });
 }
-
 function selectQuarter(q) {
     _selectedQuarter = q;
     updateQuarterButtons();
@@ -996,8 +1060,9 @@ async function confirmQuarterChange() {
 }
 
 async function viewArchivedQuarter() {
-    const q = document.getElementById('archiveQuarterSelect').value;
-    if (!q) { alert('Please select a quarter to view.'); return; }
+    const sy = document.getElementById('archiveSYSelect').value;
+    const q  = document.getElementById('archiveQuarterSelect').value;
+    if (!sy || !q) { alert('Please select both a school year and quarter.'); return; }
 
     const box = document.getElementById('archiveStatsBox');
     box.style.display = 'grid';
@@ -1006,7 +1071,7 @@ async function viewArchivedQuarter() {
         .forEach(id => { document.getElementById(id).textContent = '…'; });
 
     try {
-        const res  = await apiFetch(`${API_BASE}/get_archive_stats.php?quarter=${q}`);
+        const res  = await apiFetch(`${API_BASE}/get_archive_stats.php?quarter=${q}&school_year_id=${sy}`);
         const data = await res.json();
         if (data.success) {
             document.getElementById('archiveStatOffenses').textContent    = data.offenses    ?? '—';
@@ -1624,6 +1689,137 @@ function handleSectionUpload(e){ const f=e.target.files[0]; e.target.value=''; h
 loadDashboardStats();
 loadRecentActivity();
 loadActiveQuarter();
+loadSchoolYears();
+
+async function loadSchoolYears() {
+    try {
+        const res  = await apiFetch(`${API_BASE}/get_school_years.php`);
+        const data = await res.json();
+        _allSchoolYears = data.school_years || [];
+        _activeSY       = _allSchoolYears.find(sy => sy.is_active == 1) || null;
+        _selectedSY     = _activeSY;
+    } catch(e) {
+        _allSchoolYears = [];
+        _activeSY       = null;
+        _selectedSY     = null;
+    }
+}
+
+function renderSYButtons() {
+    const group = document.getElementById('syButtonGroup');
+    if (!group) return;
+    group.innerHTML = _allSchoolYears.map(sy => {
+        const isActive   = _activeSY   && sy.id == _activeSY.id;
+        const isSelected = _selectedSY && sy.id == _selectedSY.id;
+        return `<button
+            onclick="selectSY(${sy.id})"
+            style="padding:10px 18px;border-radius:10px;
+                   border:2px solid ${isActive ? 'var(--gold)' : 'rgba(61,53,103,0.15)'};
+                   background:${isSelected ? 'var(--dark-navy)' : '#fff'};
+                   color:${isSelected ? 'var(--gold)' : 'var(--dark-navy)'};
+                   font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;
+                   box-shadow:${isActive ? '0 0 0 3px rgba(212,166,80,0.2)' : 'none'};">
+            S.Y. ${sy.label}
+        </button>`;
+    }).join('');
+}
+
+function selectSY(id) {
+    _selectedSY = _allSchoolYears.find(sy => sy.id == id) || null;
+    renderSYButtons();
+
+    const warningBox = document.getElementById('syWarningBox');
+    const confirmBtn = document.getElementById('confirmSYBtn');
+    const successMsg = document.getElementById('sySuccessMsg');
+    successMsg.style.display = 'none';
+
+    if (_selectedSY && _activeSY && _selectedSY.id != _activeSY.id) {
+        document.getElementById('syWarningFrom').textContent = _activeSY.label;
+        document.getElementById('syWarningTo').textContent   = _selectedSY.label;
+        warningBox.style.display = 'block';
+        confirmBtn.style.display = 'block';
+    } else {
+        warningBox.style.display = 'none';
+        confirmBtn.style.display = 'none';
+    }
+}
+
+async function confirmSYChange() {
+    const btn = document.getElementById('confirmSYBtn');
+    btn.disabled    = true;
+    btn.textContent = 'Saving…';
+    try {
+        const res  = await apiFetch(`${API_BASE}/save_school_year.php`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ school_year_id: _selectedSY.id })
+        });
+        const data = await res.json();
+        if (data.success) {
+            _activeSY        = _selectedSY;
+            _activeQuarter   = 1;
+            _selectedQuarter = 1;
+            document.getElementById('settingsCurrentSYDisplay').textContent      = _activeSY.label;
+            document.getElementById('settingsSYDescription').textContent         =
+                `S.Y. ${_activeSY.label} is currently active. All records are stamped under this school year.`;
+            document.getElementById('settingsCurrentQuarterDisplay').textContent = '1';
+            document.getElementById('settingsQuarterDescription').textContent    = quarterLabels[1];
+            document.getElementById('syWarningBox').style.display                = 'none';
+            document.getElementById('sySuccessMsg').style.display                = 'block';
+            btn.style.display = 'none';
+            updateQuarterButtons();
+            renderSYButtons();
+            populateArchiveSYSelect();
+        } else {
+            alert('Failed to save: ' + (data.message || 'Unknown error'));
+            btn.disabled    = false;
+            btn.textContent = 'Apply School Year Change';
+        }
+    } catch(e) {
+        alert('Network error. Please try again.');
+        btn.disabled    = false;
+        btn.textContent = 'Apply School Year Change';
+    }
+}
+
+async function addSchoolYear() {
+    const input = document.getElementById('newSYInput');
+    const label = input.value.trim();
+    const msg   = document.getElementById('addSYMsg');
+    if (!label) { alert('Please enter a school year, e.g. 2025-2026'); return; }
+
+    try {
+        const res  = await apiFetch(`${API_BASE}/add_school_year.php`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ label })
+        });
+        const data = await res.json();
+        if (data.success) {
+            input.value = '';
+            msg.textContent    = `✅ S.Y. ${label} added!`;
+            msg.style.display  = 'block';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+            await loadSchoolYears();
+            renderSYButtons();
+            populateArchiveSYSelect();
+        } else {
+            alert('Error: ' + (data.message || 'Could not add school year'));
+        }
+    } catch(e) {
+        alert('Network error: ' + e.message);
+    }
+}
+
+function populateArchiveSYSelect() {
+    const sel = document.getElementById('archiveSYSelect');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">— Select School Year —</option>' +
+        _allSchoolYears.map(sy =>
+            `<option value="${sy.id}">S.Y. ${sy.label}</option>`
+        ).join('');
+}    
+    
 </script>
 </body>
 </html>
