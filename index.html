@@ -550,11 +550,12 @@
         </div>
         <!-- Settings Page -->
 <!-- Settings Page -->
-<div id="settingsPage" class="dashboard-content hidden">
-  <div style="display:flex; flex-direction:column; height:calc(100vh - 88px); gap:16px; padding:0 4px;">
+<!-- Settings Page -->
+<div id="settingsPage" class="dashboard-content hidden" style="padding:0;">
+  <div style="display:flex; flex-direction:column; height:calc(100vh - 88px); gap:16px; padding:24px 40px; box-sizing:border-box;">
 
     <!-- Title -->
-    <div style="margin-bottom:0;">
+    <div style="flex-shrink:0;">
       <h2 style="font-size:22px;font-weight:700;color:var(--dark-navy);margin-bottom:2px;">⚙️ System Settings</h2>
       <p style="font-size:13px;color:#888;">Manage the active school year and quarter. Switching archives current data.</p>
     </div>
@@ -656,12 +657,12 @@
       </div>
     </div>
 
-    <!-- ── Archive Viewer (expands to fill remaining space) ── -->
-    <div style="background:var(--light-gray);border-radius:14px;padding:24px 28px;flex:1;display:flex;flex-direction:column;">
-      <h3 style="font-size:15px;font-weight:700;color:var(--dark-navy);margin-bottom:4px;">🗂️ View Archived Data</h3>
-      <p style="font-size:12px;color:#888;margin-bottom:14px;">Browse record counts from any school year and quarter.</p>
+    <!-- ── Archive Viewer: flex:1 makes it fill ALL remaining vertical space ── -->
+    <div style="background:var(--light-gray);border-radius:14px;padding:24px 28px;flex:1;min-height:0;box-sizing:border-box;display:flex;flex-direction:column;">
+      <h3 style="font-size:15px;font-weight:700;color:var(--dark-navy);margin-bottom:4px;flex-shrink:0;">🗂️ View Archived Data</h3>
+      <p style="font-size:12px;color:#888;margin-bottom:14px;flex-shrink:0;">Browse record counts from any school year and quarter.</p>
 
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;flex-shrink:0;">
         <select id="archiveSYSelect"
                 style="padding:8px 16px;border:1.5px solid #ccc;border-radius:7px;
                        font-family:'Outfit',sans-serif;font-size:13px;color:var(--dark-navy);
@@ -684,7 +685,7 @@
                        font-weight:600;cursor:pointer;">View Archive</button>
       </div>
 
-      <div id="archiveStatsBox" style="display:none;grid-template-columns:repeat(4,1fr);gap:10px;">
+      <div id="archiveStatsBox" style="display:none;grid-template-columns:repeat(4,1fr);gap:10px;flex-shrink:0;">
         <div style="background:var(--dark-navy);border-radius:8px;padding:14px;text-align:center;">
           <div style="font-size:10px;color:rgba(212,166,80,0.7);font-weight:600;text-transform:uppercase;margin-bottom:4px;">Offenses</div>
           <div id="archiveStatOffenses" style="font-size:24px;font-weight:700;color:var(--gold);">—</div>
