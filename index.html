@@ -1796,14 +1796,21 @@ async function addSchoolYear() {
         });
         const data = await res.json();
         if (data.success) {
-            input.value = '';
-            msg.textContent    = `✅ S.Y. ${label} added!`;
-            msg.style.display  = 'block';
-            setTimeout(() => { msg.style.display = 'none'; }, 3000);
-            await loadSchoolYears();
-            renderSYButtons();
-            populateArchiveSYSelect();
-        } else {
+    input.value = '';
+    msg.textContent   = `✅ S.Y. ${label} added!` + (data.auto_activated ? ' (set as active)' : '');
+    msg.style.display = 'block';
+    setTimeout(() => { msg.style.display = 'none'; }, 3000);
+    await loadSchoolYears();
+    renderSYButtons();
+    populateArchiveSYSelect();
+    // update the Currently Active display immediately
+    document.getElementById('settingsCurrentSYDisplay').textContent =
+        _activeSY ? _activeSY.label : '—';
+    document.getElementById('settingsSYDescription').textContent =
+        _activeSY
+            ? `S.Y. ${_activeSY.label} is currently active. All records are stamped under this school year.`
+            : 'No school year set.';
+} else {
             alert('Error: ' + (data.message || 'Could not add school year'));
         }
     } catch(e) {
