@@ -853,6 +853,20 @@ let _activeSY       = null;
 let _selectedSY     = null;
 let _allSchoolYears = [];
 
+// ── Alert replacement ────────────────────────────────────────────
+let _himcAlertResolve = null;
+function showAlert(message, title = 'Notice', icon = 'ℹ️') {
+    document.getElementById('himcAlertIcon').textContent  = icon;
+    document.getElementById('himcAlertTitle').textContent = title;
+    document.getElementById('himcAlertMsg').textContent   = message;
+    document.getElementById('himcAlertModal').style.display = 'flex';
+    return new Promise(resolve => { _himcAlertResolve = resolve; });
+}
+function closeHimcAlert() {
+    document.getElementById('himcAlertModal').style.display = 'none';
+    if (_himcAlertResolve) { _himcAlertResolve(); _himcAlertResolve = null; }
+}
+
 async function apiFetch(url, options = {}) {
     const headers = { 'ngrok-skip-browser-warning': 'true', ...(options.headers || {}) };
     return fetch(url, { ...options, headers });
@@ -1018,12 +1032,12 @@ async function confirmQuarterChange() {
             btn.style.display = 'none';
             updateQuarterButtons();
         } else {
-            alert('Failed to save: ' + (data.message || 'Unknown error'));
+            showAlert('Failed to save: ' + (data.message || 'Unknown error'), 'Error', '❌');
             btn.disabled    = false;
             btn.textContent = 'Apply Quarter Change';
         }
     } catch(e) {
-        alert('Network error. Please try again.');
+        showAlert('Network error. Please try again.', 'Network Error', '🌐');
         btn.disabled    = false;
         btn.textContent = 'Apply Quarter Change';
     }
@@ -1032,7 +1046,7 @@ async function confirmQuarterChange() {
 async function viewArchivedQuarter() {
     const sy = document.getElementById('archiveSYSelect').value;
     const q  = document.getElementById('archiveQuarterSelect').value;
-    if (!sy || !q) { alert('Please select both a school year and quarter.'); return; }
+    if (!sy || !q) { showAlert('Please select both a school year and quarter.', 'Missing Selection', '📅'); return; return; }
 
     const box = document.getElementById('archiveStatsBox');
     box.style.display = 'grid';
@@ -1049,10 +1063,10 @@ async function viewArchivedQuarter() {
             document.getElementById('archiveStatSubmissions').textContent = data.submissions ?? '—';
             document.getElementById('archiveStatRequests').textContent    = data.requests    ?? '—';
         } else {
-            alert('Failed to load archive: ' + (data.message || 'Unknown error'));
+            showAlert('Failed to load archive: ' + (data.message || 'Unknown error'), 'Error', '❌');
         }
     } catch(e) {
-        alert('Network error loading archive stats.');
+        showAlert('Network error loading archive stats.', 'Network Error', '🌐');
     }
 }
 
@@ -1599,7 +1613,7 @@ function promptDelete(id, type, name){
             if (type==='student') loadStudentList();
             else if (type==='teacher'){ teacherSelectCache=[]; loadTeacherList(); }
             else { loadSectionList(); if(allTeachers.length){ teacherSelectCache=[]; loadTeacherList(); } }
-        } else { alert(result.message); }
+        } else { showAlert(result.message, 'Could Not Delete', '⚠️'); }
     };
     document.getElementById('confirmDeleteModal').classList.add('show');
 }
@@ -1609,7 +1623,7 @@ async function confirmDeleteAction(){
     try {
         await pendingDeleteFn();
     } catch(e) {
-        alert('Delete failed: ' + e.message);
+        showAlert('Delete failed: ' + e.message, 'Error', '❌');
     }
 }
 // ── Shared Pagination Renderer ──────────────────────────────────────────────
@@ -1741,12 +1755,12 @@ async function confirmSYChange() {
             renderSYButtons();
             populateArchiveSYSelect();
         } else {
-            alert('Failed to save: ' + (data.message || 'Unknown error'));
+            showAlert('Failed to save: ' + (data.message || 'Unknown error'), 'Error', '❌');
             btn.disabled    = false;
             btn.textContent = 'Apply School Year Change';
         }
     } catch(e) {
-        alert('Network error. Please try again.');
+        showAlert('Network error. Please try again.', 'Network Error', '🌐');
         btn.disabled    = false;
         btn.textContent = 'Apply School Year Change';
     }
@@ -1781,10 +1795,10 @@ async function addSchoolYear() {
             ? `S.Y. ${_activeSY.label} is currently active. All records are stamped under this school year.`
             : 'No school year set.';
 } else {
-            alert('Error: ' + (data.message || 'Could not add school year'));
+            showAlert(data.message || 'Could not add school year', 'Error', '❌');
         }
     } catch(e) {
-        alert('Network error: ' + e.message);
+        showAlert('Network error: ' + e.message, 'Network Error', '🌐');
     }
 }
 
@@ -1798,5 +1812,16 @@ function populateArchiveSYSelect() {
 }    
     
 </script>
+
+<!-- ══ HIMC ALERT MODAL ══ -->
+<div id="himcAlertModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:44px 52px;text-align:center;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.25);">
+        <div style="font-size:48px;margin-bottom:14px;" id="himcAlertIcon">ℹ️</div>
+        <div style="font-size:20px;font-weight:700;color:#2d2550;margin-bottom:8px;" id="himcAlertTitle">Notice</div>
+        <div style="font-size:14px;color:#555;margin-bottom:28px;line-height:1.6;white-space:pre-wrap;" id="himcAlertMsg"></div>
+        <button onclick="closeHimcAlert()" style="background:#2d2550;color:#d4a650;border:none;border-radius:8px;padding:12px 44px;font-size:15px;font-weight:600;font-family:'Outfit',sans-serif;cursor:pointer;">OK</button>
+    </div>
+</div>
+    
 </body>
 </html>
