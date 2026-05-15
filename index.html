@@ -1396,40 +1396,22 @@ function filterTeachers(q){
     teacherPage=1; renderTeacherTable();
 }
 
-async function setAsActiveDO(teacherId, fullName) {
-    const ok = await new Promise(resolve => {
-        document.getElementById('confirmDeleteMsg').textContent =
-            `Set "${fullName}" as the Disciplinary Officer? This will replace the current DO.`;
-        const modal = document.getElementById('confirmDeleteModal');
-        modal.classList.add('show');
-        // Temporarily repurpose confirm button
-        const confirmBtn = modal.querySelector('button[onclick="confirmDeleteAction()"]');
-        const origText = confirmBtn.textContent;
-        confirmBtn.textContent = 'Confirm';
-        confirmBtn.style.background = '#2d2550';
-        confirmBtn.style.color = '#d4a650';
-        const handler = () => {
-            confirmBtn.removeEventListener('click', handler);
-            confirmBtn.textContent = origText;
-            confirmBtn.style.background = '';
-            confirmBtn.style.color = '';
-            modal.classList.remove('show');
-            resolve(true);
-        };
-        const cancelBtns = modal.querySelectorAll('.btn-cancel');
-        cancelBtns.forEach(btn => {
-            const orig = btn.onclick;
-            btn.onclick = () => {
-                btn.onclick = orig;
-                confirmBtn.textContent = origText;
-                confirmBtn.style.background = '';
-                confirmBtn.style.color = '';
-                resolve(false);
-            };
-        });
-        confirmBtn.addEventListener('click', handler);
-    });
+let _doModalResolve = null;
 
+function closeDOModal(result) {
+    document.getElementById('setDOModal').style.display = 'none';
+    if (_doModalResolve) { _doModalResolve(result); _doModalResolve = null; }
+}
+
+function confirmDOModal(teacherId, fullName) {
+    document.getElementById('setDOMsg').textContent =
+        `Set "${fullName}" as the Disciplinary Officer? This will replace the current DO.`;
+    document.getElementById('setDOModal').style.display = 'flex';
+    return new Promise(resolve => { _doModalResolve = resolve; });
+}
+
+async function setAsActiveDO(teacherId, fullName) {
+    const ok = await confirmDOModal(teacherId, fullName);
     if (!ok) return;
 
     try {
@@ -1440,11 +1422,10 @@ async function setAsActiveDO(teacherId, fullName) {
         });
         const data = await res.json();
         if (data.success) {
-            // Update local data
             allTeachers.forEach(t => { t.is_do = (t.teacher_id === teacherId) ? 1 : 0; });
             filteredTeachers.forEach(t => { t.is_do = (t.teacher_id === teacherId) ? 1 : 0; });
             renderTeacherTable();
-            showAlert(`✅ ${fullName} is now the Disciplinary Officer.`, 'DO Updated', '★');
+            showAlert(`${fullName} is now the Disciplinary Officer.`, 'DO Updated', '★');
         } else {
             showAlert(data.message || 'Failed to update DO.', 'Error', '❌');
         }
@@ -1900,6 +1881,17 @@ function populateArchiveSYSelect() {
         <button onclick="closeHimcAlert()" style="background:#2d2550;color:#d4a650;border:none;border-radius:8px;padding:12px 44px;font-size:15px;font-weight:600;font-family:'Outfit',sans-serif;cursor:pointer;">OK</button>
     </div>
 </div>
-    
+<!-- ══ SET DO CONFIRM MODAL ══ -->
+<div id="setDOModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:44px 52px;text-align:center;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.25);">
+        <div style="font-size:48px;margin-bottom:14px;">★</div>
+        <div style="font-size:20px;font-weight:700;color:#2d2550;margin-bottom:8px;">Set as Disciplinary Officer?</div>
+        <div style="font-size:14px;color:#666;margin-bottom:28px;" id="setDOMsg">This will replace the current DO.</div>
+        <div style="display:flex;gap:14px;justify-content:center;">
+            <button onclick="closeDOModal(false)" style="padding:12px 32px;border-radius:8px;font-size:15px;font-weight:600;font-family:'Outfit',sans-serif;cursor:pointer;border:none;background:#f0f0f0;color:#2d2550;">Cancel</button>
+            <button onclick="closeDOModal(true)" style="padding:12px 32px;border-radius:8px;font-size:15px;font-weight:600;font-family:'Outfit',sans-serif;cursor:pointer;border:none;background:#2d2550;color:#d4a650;">Confirm</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
