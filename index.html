@@ -510,7 +510,7 @@
                 <div id="teacherUploadStatus" style="display:none;margin-bottom:16px;padding:14px 20px;border-radius:8px;font-size:14px;font-weight:500;"></div>
                 <div class="data-table-wrapper">
                     <table class="data-table">
-                        <thead><tr><th>Name</th><th>Email</th><th>Contact Number</th><th>Advisory Class</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>Name</th><th>Email</th><th>Contact Number</th><th>Advisory Class</th><th>DO Status</th><th>Actions</th></tr></thead>
                         <tbody id="teacherTableBody"><tr><td colspan="5" style="color:#aaa;padding:20px;text-align:center;">Loading...</td></tr></tbody>
                     </table>
                 </div>
@@ -1335,23 +1335,31 @@ const TEACHERS_PER_PAGE=15;
 
 async function loadTeacherList() {
     const tbody=document.getElementById('teacherTableBody');
-    tbody.innerHTML=`<tr><td colspan="5" style="color:#aaa;padding:20px;text-align:center;">Loading…</td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="6" style="color:#aaa;padding:20px;text-align:center;">Loading…</td></tr>`;
     try {
-        const data=await apiFetch(`${API_BASE}/get_teachers.php`).then(r=>r.json());
-        if (!data.success||!data.teachers.length) {
-            tbody.innerHTML=`<tr><td colspan="5" style="color:#aaa;padding:20px;text-align:center;">No teachers found.</td></tr>`;
+        const [teacherData, doData] = await Promise.all([
+            apiFetch(`${API_BASE}/get_teachers.php`).then(r=>r.json()),
+            apiFetch(`${API_BASE}/get_do.php`).then(r=>r.json()).catch(()=>({ success: false }))
+        ]);
+        if (!teacherData.success||!teacherData.teachers.length) {
+            tbody.innerHTML=`<tr><td colspan="6" style="color:#aaa;padding:20px;text-align:center;">No teachers found.</td></tr>`;
             document.getElementById('teacherPagination').innerHTML=''; return;
         }
-        allTeachers=data.teachers; filteredTeachers=allTeachers; teacherPage=1; renderTeacherTable();
+        const activeDoId = doData.success ? doData.teacher_id : null;
+        allTeachers = teacherData.teachers.map(t => ({
+            ...t,
+            is_do: t.teacher_id === activeDoId ? 1 : 0
+        }));
+        filteredTeachers=allTeachers; teacherPage=1; renderTeacherTable();
     } catch(e) {
-        tbody.innerHTML=`<tr><td colspan="5" style="color:#dc3545;padding:20px;text-align:center;">Failed to load.</td></tr>`;
+        tbody.innerHTML=`<tr><td colspan="6" style="color:#dc3545;padding:20px;text-align:center;">Failed to load.</td></tr>`;
     }
 }
 
 function renderTeacherTable() {
     const tbody=document.getElementById('teacherTableBody');
     if (!filteredTeachers.length) {
-        tbody.innerHTML=`<tr><td colspan="5" style="color:#aaa;padding:20px;text-align:center;">No results found.</td></tr>`;
+        tbody.innerHTML=`<tr><td colspan="6" style="color:#aaa;padding:20px;text-align:center;">No results found.</td></tr>`;
         document.getElementById('teacherPagination').innerHTML=''; return;
     }
     const tp=Math.ceil(filteredTeachers.length/TEACHERS_PER_PAGE);
@@ -1361,6 +1369,19 @@ function renderTeacherTable() {
         <tr>
             <td>${t.full_name||'—'}</td><td>${t.email||'—'}</td>
             <td>${t.contact_phone||'—'}</td><td>${t.advisory_class||'—'}</td>
+            <td style="text-align:center;">
+                ${t.is_do
+                    ? `<span style="background:#d4a650;color:#1e1838;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;">★ Active DO</span>`
+                    : `<button onclick="setAsActiveDO(${t.teacher_id},'${escHtml(t.full_name)}')"
+                        style="background:#f0eff5;color:#2d2550;border:1.5px solid rgba(45,37,80,0.2);
+                               padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;
+                               cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.2s;"
+                        onmouseover="this.style.background='#2d2550';this.style.color='#d4a650'"
+                        onmouseout="this.style.background='#f0eff5';this.style.color='#2d2550'">
+                        Set as DO
+                      </button>`
+                }
+            </td>
             <td>
                 <button class="btn-edit" onclick="editTeacher(${t.teacher_id})">Edit</button>
                 <button class="btn-delete" onclick="promptDelete(${t.teacher_id},'teacher','${escHtml(t.full_name)}')">Delete</button>
@@ -1373,6 +1394,63 @@ function filterTeachers(q){
     q=q.trim().toLowerCase();
     filteredTeachers=!q?allTeachers:allTeachers.filter(t=>(t.full_name||'').toLowerCase().includes(q)||(t.email||'').toLowerCase().includes(q));
     teacherPage=1; renderTeacherTable();
+}
+
+async function setAsActiveDO(teacherId, fullName) {
+    const ok = await new Promise(resolve => {
+        document.getElementById('confirmDeleteMsg').textContent =
+            `Set "${fullName}" as the Disciplinary Officer? This will replace the current DO.`;
+        const modal = document.getElementById('confirmDeleteModal');
+        modal.classList.add('show');
+        // Temporarily repurpose confirm button
+        const confirmBtn = modal.querySelector('button[onclick="confirmDeleteAction()"]');
+        const origText = confirmBtn.textContent;
+        confirmBtn.textContent = 'Confirm';
+        confirmBtn.style.background = '#2d2550';
+        confirmBtn.style.color = '#d4a650';
+        const handler = () => {
+            confirmBtn.removeEventListener('click', handler);
+            confirmBtn.textContent = origText;
+            confirmBtn.style.background = '';
+            confirmBtn.style.color = '';
+            modal.classList.remove('show');
+            resolve(true);
+        };
+        const cancelBtns = modal.querySelectorAll('.btn-cancel');
+        cancelBtns.forEach(btn => {
+            const orig = btn.onclick;
+            btn.onclick = () => {
+                btn.onclick = orig;
+                confirmBtn.textContent = origText;
+                confirmBtn.style.background = '';
+                confirmBtn.style.color = '';
+                resolve(false);
+            };
+        });
+        confirmBtn.addEventListener('click', handler);
+    });
+
+    if (!ok) return;
+
+    try {
+        const res  = await apiFetch(`${API_BASE}/set_do.php`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ teacher_id: teacherId })
+        });
+        const data = await res.json();
+        if (data.success) {
+            // Update local data
+            allTeachers.forEach(t => { t.is_do = (t.teacher_id === teacherId) ? 1 : 0; });
+            filteredTeachers.forEach(t => { t.is_do = (t.teacher_id === teacherId) ? 1 : 0; });
+            renderTeacherTable();
+            showAlert(`✅ ${fullName} is now the Disciplinary Officer.`, 'DO Updated', '★');
+        } else {
+            showAlert(data.message || 'Failed to update DO.', 'Error', '❌');
+        }
+    } catch(e) {
+        showAlert('Network error: ' + e.message, 'Network Error', '🌐');
+    }
 }
 
 // REPLACE openTeacherModal with this
